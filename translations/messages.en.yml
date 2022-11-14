@@ -1,0 +1,15 @@
+dt:
+  columns:
+    name: Name
+    phone: Phone
+    email: Email
+    country: Country
+    currency: Currency
+    rate: Rate
+    percentcharge: Percent charge
+    fixedcharged: Fixed charge
+
+button:
+  show: 'Detail'
+  prediction: 'Prediction'
+  cote: 'Cotes'
