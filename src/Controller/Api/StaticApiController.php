@@ -4,22 +4,31 @@
 namespace App\Controller\Api;
 
 
+use App\Entity\AddressShipping;
 use App\Entity\AffectationRide;
 use App\Entity\Car;
+use App\Entity\Configuration;
 use App\Entity\Customer;
 use App\Entity\Driver;
+use App\Entity\Place;
 use App\Entity\Proprietaire;
 use App\Entity\Ride;
+use App\Entity\Shipping;
 use App\Entity\User;
 use App\Entity\Wallet;
+use App\Repository\AddressShippingRepository;
 use App\Repository\AffectationRideRepository;
 use App\Repository\CarRepository;
+use App\Repository\ConfigurationRepository;
 use App\Repository\CustomerRepository;
 use App\Repository\DriverRepository;
+use App\Repository\PlaceRepository;
 use App\Repository\ProprietaireRepository;
 use App\Repository\RideRepository;
+use App\Repository\ShippingRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
@@ -30,27 +39,40 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class StaticApiController extends AbstractFOSRestController
 {
-    private $passwordEncoder;
+    private UserPasswordHasherInterface $passwordEncoder;
     /**
      * @var LoggerInterface
      */
-    private $logger;
-    private $userRepository;
-    private $customerRepository;
-    private $carRepository;
-    private $driverRepository;
-    private $rideRepository;
-    private $propretaireRepository;
-    private $affactationRepository;
-    private $doctrine;
+    private LoggerInterface $logger;
+    private UserRepository $userRepository;
+    private CustomerRepository $customerRepository;
+    private CarRepository $carRepository;
+    private DriverRepository $driverRepository;
+    private RideRepository $rideRepository;
+    private ProprietaireRepository $propretaireRepository;
+    private AffectationRideRepository $affactationRepository;
+    private ConfigurationRepository $configurationRepository;
+    private PlaceRepository $placeRepository;
+    private AddressShippingRepository $addressRepository;
+    private EntityManagerInterface $doctrine;
+    private ShippingRepository $shippingRepository;
 
     /**
+     * @param PlaceRepository $placeRepository
+     * @param AddressShippingRepository $addressRepository
+     * @param ConfigurationRepository $configurationRepository
      * @param EntityManagerInterface $entityManager
      * @param UserRepository $userRepository
+     * @param AffectationRideRepository $affectationRideRepository
+     * @param ProprietaireRepository $propretaireRepository
+     * @param CarRepository $carRepository
+     * @param DriverRepository $driverRepository
+     * @param RideRepository $rideRepository
+     * @param CustomerRepository $customerRepository
      * @param LoggerInterface $logger
      * @param UserPasswordHasherInterface $passwordEncoder
      */
-    public function __construct(EntityManagerInterface $entityManager,UserRepository $userRepository,AffectationRideRepository $affectationRideRepository,
+    public function __construct(ShippingRepository $shippingRepository,PlaceRepository $placeRepository,AddressShippingRepository $addressRepository,ConfigurationRepository $configurationRepository,EntityManagerInterface $entityManager,UserRepository $userRepository,AffectationRideRepository $affectationRideRepository,
                                 ProprietaireRepository $propretaireRepository,CarRepository $carRepository,
                                 DriverRepository $driverRepository,RideRepository $rideRepository,CustomerRepository $customerRepository,
                                 LoggerInterface $logger,UserPasswordHasherInterface $passwordEncoder)
@@ -64,9 +86,34 @@ class StaticApiController extends AbstractFOSRestController
         $this->propretaireRepository=$propretaireRepository;
         $this->rideRepository=$rideRepository;
         $this->affactationRepository=$affectationRideRepository;
+        $this->configurationRepository=$configurationRepository;
+        $this->addressRepository=$addressRepository;
+        $this->placeRepository=$placeRepository;
+        $this->shippingRepository=$shippingRepository;
         $this->doctrine=$entityManager;
     }
 
+    /**
+     * @Rest\Post("/v1/parametres", name="api_parametres_post")
+     * @param Request $request
+     * @return Response
+     * @throws NonUniqueResultException
+     */
+    public function configuration(Request $request)
+    {
+        $res = json_decode($request->getContent(), true);
+        $data = $res['data'];
+        $item = $this->configurationRepository->findOneByLast();
+        if (is_null($item)) {
+            $item = new Configuration();
+            $this->doctrine->persist($item);
+        }
+        $item->setTarifkm($data['tarifkm']);
+        $item->setTarifheure($data['tarifheure']);
+        $this->doctrine->flush();
+        $view = $this->view([], Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
     /**
      * @Rest\Post("/v1/cars", name="api_cars_post")
      * @param Request $request
@@ -234,7 +281,85 @@ class StaticApiController extends AbstractFOSRestController
         $view = $this->view([], Response::HTTP_OK, []);
         return $this->handleView($view);
     }
-
+    /**
+     * @Rest\Post("/v1/places", name="api_places_post")
+     * @param Request $request
+     * @return Response
+     * @throws Exception
+     */
+    public function placePost(Request $request)
+    {
+        $res = json_decode($request->getContent(), true);
+        $data = $res['data'];
+        if (!is_null($data['id'])) {
+            $item = $this->placeRepository->find($data['id']);
+        } else {
+            $item = new Place();
+            $propretaire=$this->propretaireRepository->find($data['propretaire']);
+            $item->setPropretaire($propretaire);
+            $this->doctrine->persist($item);
+        }
+        $item->setPhone($data['phone']);
+        $item->setName($data['name']);
+        $item->setAddress($data['address']);
+        $item->setBp($data['bp']);
+        $item->setLatitude($data['latitude']);
+        $item->setLongitude($data['longitude']);
+        $this->doctrine->flush();
+        $view = $this->view([], Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+    /**
+     * @Rest\Post("/v1/address/customer/{id}", name="api_address_post")
+     * @param Request $request
+     * @return Response
+     * @throws Exception
+     */
+    public function addressPost(Request $request)
+    {
+        $res = json_decode($request->getContent(), true);
+        $data = $res['data'];
+        if (!is_null($data['id'])) {
+            $item = $this->addressRepository->find($data['id']);
+        } else {
+            $item = new AddressShipping();
+            $customer=$this->customerRepository->find($data['customer']);
+            $item->setCustomer($customer);
+            $this->doctrine->persist($item);
+        }
+        $item->setName($data['name']);
+        $item->setLatitude($data['latitude']);
+        $item->setLongitude($data['longitude']);
+        $this->doctrine->flush();
+        $view = $this->view([], Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+    /**
+     * @Rest\Post("/v1/shippings", name="api_shippings_post")
+     * @param Request $request
+     * @return Response
+     * @throws Exception
+     */
+    public function shippingPost(Request $request)
+    {
+        $res = json_decode($request->getContent(), true);
+        $data = $res['data'];
+        if (!is_null($data['id'])) {
+            $item = $this->shippingRepository->find($data['id']);
+        } else {
+            $item = new Shipping();
+            $address=$this->addressRepository->find($data['address']);
+            $place=$this->placeRepository->find($data['place']);
+            $item->setAddress($address);
+            $item->setPlace($place);
+            $this->doctrine->persist($item);
+        }
+        $item->setDistance($data['distance']);
+        $item->setStatus(Shipping::PENDING);
+        $this->doctrine->flush();
+        $view = $this->view([], Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
     private function createWallet(User $user){
         $wallet=new Wallet();
         $wallet->setAmount(0.0);
@@ -293,7 +418,36 @@ class StaticApiController extends AbstractFOSRestController
                 'marque' => $item->getMarque(),
                 'model' => $item->getModel(),
                 'matricule' => $item->getRegistrationNumber(),
-                'carte_grise' => $item->getVariant(),
+                'cartegrise' => $item->getVariant(),
+                'propretaire_id' => $item->getPropretaire()->getId(),
+                'propretaire' => $item->getPropretaire()->getCompte()->getName(),
+                //'image' => is_null($image) ? "" : $this->getParameter('domaininit') . $image->getSrc(),
+            ];
+        }
+        $view = $this->view($data, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+
+    /**
+     * @Rest\Get("/v1/cars/propretaire/{id}", name="api_car_list_propretaire")
+     * @param Request $request
+     * @param Proprietaire $proprietaire
+     * @return Response
+     */
+    public function carPropretaireList(Request $request,Proprietaire $proprietaire)
+    {
+        $items = $this->carRepository->findBy(['propretaire'=>$proprietaire]);
+        $data = [];
+        foreach ($items as $item) {
+            // $image = $product->getImages()[0];
+            $data[] = [
+                'id' => $item->getId(),
+                'rate' => $item->getRate(),
+                'baseprice' => $item->getBaseprice(),
+                'marque' => $item->getMarque(),
+                'model' => $item->getModel(),
+                'matricule' => $item->getRegistrationNumber(),
+                'cartegrise' => $item->getVariant(),
                 'propretaire_id' => $item->getPropretaire()->getId(),
                 'propretaire' => $item->getPropretaire()->getCompte()->getName(),
                 //'image' => is_null($image) ? "" : $this->getParameter('domaininit') . $image->getSrc(),
@@ -346,13 +500,102 @@ class StaticApiController extends AbstractFOSRestController
         return $this->handleView($view);
     }
     /**
-     * @Rest\Get("/v1/riders", name="api_ride_list")
+     * @Rest\Get("/v1/rides", name="api_ride_list")
      * @param Request $request
      * @return Response
      */
     public function rideList(Request $request)
     {
         $items = $this->rideRepository->findAll();
+        $data = [];
+        foreach ($items as $item) {
+            $data[] = [
+                'id' => $item->getId(),
+                'driverid' => $item->getDriver()->getId(),
+                'car_id' => $item->getCar()->getId(),
+                'customer_id' => $item->getCustomer()->getId(),
+                'driver' => $item->getDriver(),
+                'car' => $item->getCar()->getRegistrationNumber(),
+                'customer' => $item->getCustomer(),
+                'amount' => $item->getAmount(),
+                'status' => $item->getStatus(),
+                'endto' => $item->getEndto(),
+                'startto' => $item->getStartto(),
+                'pickupend' => $item->getPickupend(),
+                'pickupbegin' => $item->getPikupbegin(),
+            ];
+        }
+        $view = $this->view($data, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+    /**
+     * @Rest\Get("/v1/rides/pending", name="api_ride_list_pending")
+     * @param Request $request
+     * @return Response
+     */
+    public function rideListPending(Request $request)
+    {
+        $items = $this->rideRepository->findBy(['status'=>Ride::STARTING]);
+        $data = [];
+        foreach ($items as $item) {
+            $data[] = [
+                'id' => $item->getId(),
+                'driverid' => $item->getDriver()->getId(),
+                'car_id' => $item->getCar()->getId(),
+                'customer_id' => $item->getCustomer()->getId(),
+                'driver' => $item->getDriver(),
+                'car' => $item->getCar()->getRegistrationNumber(),
+                'customer' => $item->getCustomer(),
+                'amount' => $item->getAmount(),
+                'status' => $item->getStatus(),
+                'endto' => $item->getEndto(),
+                'startto' => $item->getStartto(),
+                'pickupend' => $item->getPickupend(),
+                'pickupbegin' => $item->getPikupbegin(),
+            ];
+        }
+        $view = $this->view($data, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+    /**
+     * @Rest\Get("/v1/rides/finish", name="api_ride_list_finish")
+     * @param Request $request
+     * @return Response
+     */
+    public function rideListFinish(Request $request)
+    {
+        $items = $this->rideRepository->findBy(['status'=>Ride::FINISH]);
+        $data = [];
+        foreach ($items as $item) {
+            $data[] = [
+                'id' => $item->getId(),
+                'driverid' => $item->getDriver()->getId(),
+                'car_id' => $item->getCar()->getId(),
+                'customer_id' => $item->getCustomer()->getId(),
+                'driver' => $item->getDriver(),
+                'car' => $item->getCar()->getRegistrationNumber(),
+                'customer' => $item->getCustomer(),
+                'amount' => $item->getAmount(),
+                'status' => $item->getStatus(),
+                'endto' => $item->getEndto(),
+                'startto' => $item->getStartto(),
+                'pickupend' => $item->getPickupend(),
+                'pickupbegin' => $item->getPikupbegin(),
+            ];
+        }
+        $view = $this->view($data, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+
+    /**
+     * @Rest\Get("/v1/rides/customer/{id}", name="api_ride_list_customer")
+     * @param Request $request
+     * @param Customer $customer
+     * @return Response
+     */
+    public function rideListByCustomer(Request $request,Customer $customer)
+    {
+        $items = $this->rideRepository->findBy(['customer'=>$customer]);
         $data = [];
         foreach ($items as $item) {
             $data[] = [
@@ -442,6 +685,141 @@ class StaticApiController extends AbstractFOSRestController
                 'expired'=>$item->getExpiredAt(),
             ];
         }
+        $view = $this->view($data, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+    /**
+     * @Rest\Get("/v1/places", name="api_place_list")
+     * @param Request $request
+     * @return Response
+     */
+    public function placeList(Request $request)
+    {
+        $items = $this->placeRepository->findAll();
+        $data = [];
+        foreach ($items as $item) {
+            $data[] = [
+                'id' => $item->getId(),
+                'name' => $item->getName(),
+                'phone' => $item->getPhone(),
+                'address' => $item->getAddress(),
+                'propretaire' => $item->getPropretaire()->getId(),
+                'bp' => $item->getBp(),
+                'latitude' => $item->getLatitude(),
+                'longitude' => $item->getLongitude(),
+            ];
+        }
+        $view = $this->view($data, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+    /**
+     * @Rest\Get("/v1/shippings", name="api_shippings_list")
+     * @param Request $request
+     * @return Response
+     */
+    public function shippingList(Request $request)
+    {
+        $items = $this->shippingRepository->findAll();
+        $data = [];
+        foreach ($items as $item) {
+            $data[] = [
+                'id' => $item->getId(),
+                'addressname' => $item->getAddress()->getName(),
+                'distance' => $item->getDistance(),
+                'addressid' => $item->getAddress()->getId(),
+                'placeid' => $item->getPlace()->getId(),
+                'placename' => $item->getPlace()->getName(),
+                'status' => $item->getStatus(),
+                'createdat' => $item->getDateCreated(),
+            ];
+        }
+        $view = $this->view($data, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+    /**
+     * @Rest\Get("/v1/shippings/finish", name="api_shippings_finish_list")
+     * @param Request $request
+     * @return Response
+     */
+    public function shippingfinishList(Request $request)
+    {
+        $items = $this->shippingRepository->findBy(['status'=>Shipping::FINISH]);
+        $data = [];
+        foreach ($items as $item) {
+            $data[] = [
+                'id' => $item->getId(),
+                'addressname' => $item->getAddress()->getName(),
+                'distance' => $item->getDistance(),
+                'addressid' => $item->getAddress()->getId(),
+                'placeid' => $item->getPlace()->getId(),
+                'placename' => $item->getPlace()->getName(),
+                'status' => $item->getStatus(),
+                'createdat' => $item->getDateCreated(),
+            ];
+        }
+        $view = $this->view($data, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+    /**
+     * @Rest\Get("/v1/shippings/pending", name="api_shippings_pending_list")
+     * @param Request $request
+     * @return Response
+     */
+    public function shippingstartList(Request $request)
+    {
+        $items = $this->shippingRepository->findBy(['status'=>Shipping::STARTING]);
+        $data = [];
+        foreach ($items as $item) {
+            $data[] = [
+                'id' => $item->getId(),
+                'addressname' => $item->getAddress()->getName(),
+                'distance' => $item->getDistance(),
+                'addressid' => $item->getAddress()->getId(),
+                'placeid' => $item->getPlace()->getId(),
+                'placename' => $item->getPlace()->getName(),
+                'status' => $item->getStatus(),
+                'createdat' => $item->getDateCreated(),
+            ];
+        }
+        $view = $this->view($data, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+    /**
+     * @Rest\Get("/v1/addresses/customer/{id}", name="api_addresscustomer_list")
+     * @param Request $request
+     * @return Response
+     */
+    public function addressCustomer(Request $request,Customer $customer)
+    {
+        $items = $this->addressRepository->findBy(['customer'=>$customer]);
+        $data = [];
+        foreach ($items as $item) {
+            $data[] = [
+                'id' => $item->getId(),
+                'name' => $item->getName(),
+                'longitude' => $item->getLongitude(),
+                'latitude' => $item->getLatitude(),
+                'customername' => $item->getCustomer()->getCompte()->getName(),
+                'customerid' => $item->getCustomer()->getId(),
+            ];
+        }
+        $view = $this->view($data, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+    /**
+     * @Rest\Get("/v1/parametres", name="api_parametres")
+     * @param Request $request
+     * @return Response
+     * @throws NonUniqueResultException
+     */
+    public function getParametrage(Request $request)
+    {
+        $item = $this->configurationRepository->findOneByLast();
+            $data= [
+                'id' => $item->getId(),
+                'tarifheure' => $item->getTarifheure(),
+                'tarifkm' => $item->getTarifkm(),
+            ];
         $view = $this->view($data, Response::HTTP_OK, []);
         return $this->handleView($view);
     }

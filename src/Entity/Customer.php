@@ -24,9 +24,13 @@ class Customer
     #[ORM\OneToMany(mappedBy: 'customer', targetEntity: Ride::class)]
     private Collection $rides;
 
+    #[ORM\OneToMany(mappedBy: 'customer', targetEntity: AddressShipping::class)]
+    private Collection $addresses;
+
     public function __construct()
     {
         $this->rides = new ArrayCollection();
+        $this->addresses = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -90,5 +94,35 @@ class Customer
     public function __toString()
     {
         return $this->compte->getName();
+    }
+
+    /**
+     * @return Collection<int, AddressShipping>
+     */
+    public function getAddresses(): Collection
+    {
+        return $this->addresses;
+    }
+
+    public function addAddress(AddressShipping $address): self
+    {
+        if (!$this->addresses->contains($address)) {
+            $this->addresses->add($address);
+            $address->setCustomer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAddress(AddressShipping $address): self
+    {
+        if ($this->addresses->removeElement($address)) {
+            // set the owning side to null (unless already changed)
+            if ($address->getCustomer() === $this) {
+                $address->setCustomer(null);
+            }
+        }
+
+        return $this;
     }
 }

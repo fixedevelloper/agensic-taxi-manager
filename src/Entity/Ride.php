@@ -13,6 +13,7 @@ class Ride
     const ACCEPTED="ACCEPTED";
     const REJECT="REJECT";
     const STARTING="STARTING";
+    const FINISH="FINISH";
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

@@ -22,9 +22,13 @@ class Proprietaire
     #[ORM\OneToMany(mappedBy: 'propretaire', targetEntity: Car::class)]
     private Collection $cars;
 
+    #[ORM\OneToMany(mappedBy: 'propretaire', targetEntity: Place::class)]
+    private Collection $places;
+
     public function __construct()
     {
         $this->cars = new ArrayCollection();
+        $this->places = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -92,5 +96,35 @@ class Proprietaire
     public function __toString()
     {
         return $this->compte->getName();
+    }
+
+    /**
+     * @return Collection<int, Place>
+     */
+    public function getPlaces(): Collection
+    {
+        return $this->places;
+    }
+
+    public function addPlace(Place $place): self
+    {
+        if (!$this->places->contains($place)) {
+            $this->places->add($place);
+            $place->setPropretaire($this);
+        }
+
+        return $this;
+    }
+
+    public function removePlace(Place $place): self
+    {
+        if ($this->places->removeElement($place)) {
+            // set the owning side to null (unless already changed)
+            if ($place->getPropretaire() === $this) {
+                $place->setPropretaire(null);
+            }
+        }
+
+        return $this;
     }
 }

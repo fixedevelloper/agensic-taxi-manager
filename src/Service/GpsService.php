@@ -81,4 +81,5 @@ class GpsService
         $res = $this->client->post($endpoint, $options);
         return json_decode($res->getBody(), true);
     }
+
 }

@@ -11,7 +11,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 /**
- * @Route("/auth")
+ *
  *
  */
 class LoginController extends AbstractController
@@ -30,6 +30,14 @@ class LoginController extends AbstractController
     {
         $this->logger = $logger;
         $this->passwordEncoder = $passwordEncoder;
+    }
+    /**
+     * @Route("/", name="home")
+     */
+    public function p404(Request $request): Response
+    {
+        return $this->render('login/404.html.twig', [
+        ]);
     }
     /**
      * @Route("/register", name="register")

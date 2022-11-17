@@ -60,15 +60,15 @@ class GpsApiController extends AbstractFOSRestController
         $tracker_phone_number = $data['tracker_phone_number'];
         $admin_contact1 = $data['admin_contact1'];
         $operator=$data['operator'];
-        $response = $this->gpsService->createDevise([
+ /*       $response = $this->gpsService->createDevise([
             'imei' => $emei,
             'license' => $license,
             'tracker_phone_number' => $tracker_phone_number,
             'admin_contact1' => $admin_contact1,
             'operator'=>$operator
         ]);
-        if ($response){
-            if (!is_null($data['id'])) {
+        if ($response){*/
+            if (!empty($data['id'])) {
                 $item = $this->gpedeviceRepository->find($data['id']);
             } else {
                 $devise = $this->carRepository->find($data['devise']);
@@ -78,23 +78,49 @@ class GpsApiController extends AbstractFOSRestController
             }
             $item->setEmei($data['emei']);
             $item->setLicense($data['license']);
+            $item->setOperator($data['operator']);
             $item->setSimNumber($data['tracker_phone_number']);
             $item->setContactadmin($data['admin_contact1']);
-        }
+       // }
         $this->doctrine->flush();
-        $view = $this->view($response, Response::HTTP_OK, []);
+        $view = $this->view([], Response::HTTP_OK, []);
         return $this->handleView($view);
     }
+
     /**
-     * @Rest\Get("/v1/gpsdevise/{id}", name="api_gpsdevise_list")
+     * @Rest\Get("/v1/gpsdevise/{id}", name="api_gpsdevise_one")
      * @param Request $request
+     * @param Car $car
      * @return Response
      */
     public function gpsdeviseOne(Request $request,Car $car)
     {
-        $view = $this->view($this->gpsService->getOneDevise([
-            'device_imei'=>$car->getGpsdevice()->getEmei()
-        ]), Response::HTTP_OK, []);
+      /*  $getdevice=$this->gpsService->getOneDevise([
+            'device_imei'=>$car->getGpsdevice()->getEmei(),
+
+        ]);*/
+        if (is_null($car->getGpsdevice())){
+            $response=[
+                'imei'=>"",
+                'license' => "",
+                'tracker_phone_number' => "",
+                'admin_contact1' => "",
+                'operator'=>"",
+                'id'=>null
+            ];
+        }else{
+            $response=[
+                'emei'=>$car->getGpsdevice()->getEmei(),
+                'license' => $car->getGpsdevice()->getLicense(),
+                'tracker_phone_number' => $car->getGpsdevice()->getSimNumber(),
+                'admin_contact1' => $car->getGpsdevice()->getContactadmin(),
+                'operator'=>$car->getGpsdevice()->getOperator(),
+                'id'=>$car->getGpsdevice()->getId()
+            ];
+        }
+
+        $view = $this->view($response, Response::HTTP_OK, []);
         return $this->handleView($view);
     }
+
 }

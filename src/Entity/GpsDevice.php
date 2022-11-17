@@ -22,24 +22,24 @@ class GpsDevice
     #[ORM\Column(length: 255)]
     private ?string $operator = null;
     #[ORM\Column(length: 255)]
-    private ?string $contactadmin = null;
+    private ?string $contactadmin = "0";
     #[ORM\Column(length: 255)]
-    private ?string $lastLongitude = null;
+    private ?string $lastLongitude = "0";
 
     #[ORM\Column(length: 255)]
-    private ?string $lastLatitude = null;
+    private ?string $lastLatitude = "0";
 
     #[ORM\Column(length: 255)]
-    private ?string $lastSpeed = null;
+    private ?string $lastSpeed = "0";
 
     #[ORM\Column(length: 255)]
-    private ?string $lastAltitude = null;
+    private ?string $lastAltitude = "0";
 
     #[ORM\Column(length: 255)]
-    private ?string $lastStatus = null;
+    private ?string $lastStatus = "0";
 
     #[ORM\Column(length: 255)]
-    private ?string $lastTrackTime = null;
+    private ?string $lastTrackTime = "";
 
     public function getId(): ?int
     {
