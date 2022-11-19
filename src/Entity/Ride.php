@@ -39,12 +39,25 @@ class Ride
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $endto = null;
-
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $distance = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?int $estimateTime = 0;
     #[ORM\Column(nullable: true)]
     private ?float $amount = null;
 
     #[ORM\Column(length: 255)]
     private ?string $status = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $longitudestart = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $latitudestart = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $longitudestop = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $latitudestop = null;
 
     public function getId(): ?int
     {
@@ -145,6 +158,102 @@ class Ride
         $this->amount = $amount;
 
         return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getDistance(): ?string
+    {
+        return $this->distance;
+    }
+
+    /**
+     * @param string|null $distance
+     */
+    public function setDistance(?string $distance): void
+    {
+        $this->distance = $distance;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getLongitudestart(): ?string
+    {
+        return $this->longitudestart;
+    }
+
+    /**
+     * @param string|null $longitudestart
+     */
+    public function setLongitudestart(?string $longitudestart): void
+    {
+        $this->longitudestart = $longitudestart;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getLatitudestart(): ?string
+    {
+        return $this->latitudestart;
+    }
+
+    /**
+     * @param string|null $latitudestart
+     */
+    public function setLatitudestart(?string $latitudestart): void
+    {
+        $this->latitudestart = $latitudestart;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getLongitudestop(): ?string
+    {
+        return $this->longitudestop;
+    }
+
+    /**
+     * @param string|null $longitudestop
+     */
+    public function setLongitudestop(?string $longitudestop): void
+    {
+        $this->longitudestop = $longitudestop;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getLatitudestop(): ?string
+    {
+        return $this->latitudestop;
+    }
+
+    /**
+     * @param string|null $latitudestop
+     */
+    public function setLatitudestop(?string $latitudestop): void
+    {
+        $this->latitudestop = $latitudestop;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getEstimateTime(): ?int
+    {
+        return $this->estimateTime;
+    }
+
+    /**
+     * @param int|null $estimateTime
+     */
+    public function setEstimateTime(?int $estimateTime): void
+    {
+        $this->estimateTime = $estimateTime;
     }
 
     public function getStatus(): ?string

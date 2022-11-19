@@ -265,15 +265,24 @@ class StaticApiController extends AbstractFOSRestController
         } else {
             $item = new Ride();
             $customer=$this->customerRepository->find($data['customer']);
-            $affecation=$this->affactationRepository->find($data['affectation']);
-            $item->setCar($affecation->getCAr());
-            $item->setDriver($affecation->getDriver());
             $item->setCustomer($customer);
             $this->doctrine->persist($item);
+        }
+        if ($item->getStatus()==Ride::PENDING){
+            $affecation=$this->affactationRepository->find($data['affectation']);
+            if (!is_null($data['affectation'])){
+                $item->setCar($affecation->getCAr());
+                $item->setDriver($affecation->getDriver());
+            }
         }
         $item->setAmount($data['amount']);
         $item->setStartto($data['startto']);
         $item->setEndto($data['endto']);
+        $item->setLongitudestart($data['longitude_start']);
+        $item->setLatitudestart($data['latitude_start']);
+        $item->setLatitudestop($data['latitude_start']);
+        $item->setLongitudestop($data['longitude_stop']);
+        $item->setDistance($data['distance']);
         $item->setPickupend(new \DateTime($data['pickupend'],new \DateTimeZone('Africa/Brazzaville')));
         $item->setPikupbegin(new \DateTime($data['pickupbegin'],new \DateTimeZone('Africa/Brazzaville')));
         $item->setStatus(Ride::PENDING);
@@ -310,7 +319,7 @@ class StaticApiController extends AbstractFOSRestController
         return $this->handleView($view);
     }
     /**
-     * @Rest\Post("/v1/address/customer/{id}", name="api_address_post")
+     * @Rest\Post("/v1/addresses/customer/{id}", name="api_address_post")
      * @param Request $request
      * @return Response
      * @throws Exception
@@ -328,6 +337,7 @@ class StaticApiController extends AbstractFOSRestController
             $this->doctrine->persist($item);
         }
         $item->setName($data['name']);
+        $item->setAddress($data['address']);
         $item->setLatitude($data['latitude']);
         $item->setLongitude($data['longitude']);
         $this->doctrine->flush();
@@ -523,6 +533,11 @@ class StaticApiController extends AbstractFOSRestController
                 'startto' => $item->getStartto(),
                 'pickupend' => $item->getPickupend(),
                 'pickupbegin' => $item->getPikupbegin(),
+                'latitude_start'=>$item->getLatitudestart(),
+                'latitude_stop'=>$item->getLatitudestop(),
+                'longitude_start'=>$item->getLongitudestart(),
+                'longitude_stop'=>$item->getLongitudestop(),
+                'distance'=>$item->getDistance(),
             ];
         }
         $view = $this->view($data, Response::HTTP_OK, []);
@@ -552,6 +567,11 @@ class StaticApiController extends AbstractFOSRestController
                 'startto' => $item->getStartto(),
                 'pickupend' => $item->getPickupend(),
                 'pickupbegin' => $item->getPikupbegin(),
+                'latitude_start'=>$item->getLatitudestart(),
+                'latitude_stop'=>$item->getLatitudestop(),
+                'longitude_start'=>$item->getLongitudestart(),
+                'longitude_stop'=>$item->getLongitudestop(),
+                'distance'=>$item->getDistance(),
             ];
         }
         $view = $this->view($data, Response::HTTP_OK, []);
@@ -581,6 +601,11 @@ class StaticApiController extends AbstractFOSRestController
                 'startto' => $item->getStartto(),
                 'pickupend' => $item->getPickupend(),
                 'pickupbegin' => $item->getPikupbegin(),
+                'latitude_start'=>$item->getLatitudestart(),
+                'latitude_stop'=>$item->getLatitudestop(),
+                'longitude_start'=>$item->getLongitudestart(),
+                'longitude_stop'=>$item->getLongitudestop(),
+                'distance'=>$item->getDistance(),
             ];
         }
         $view = $this->view($data, Response::HTTP_OK, []);
@@ -612,6 +637,46 @@ class StaticApiController extends AbstractFOSRestController
                 'startto' => $item->getStartto(),
                 'pickupend' => $item->getPickupend(),
                 'pickupbegin' => $item->getPikupbegin(),
+                'latitude_start'=>$item->getLatitudestart(),
+                'latitude_stop'=>$item->getLatitudestop(),
+                'longitude_start'=>$item->getLongitudestart(),
+                'longitude_stop'=>$item->getLongitudestop(),
+                'distance'=>$item->getDistance(),
+            ];
+        }
+        $view = $this->view($data, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+    /**
+     * @Rest\Get("/v1/rides/driver/{id}", name="api_ride_list_driver")
+     * @param Request $request
+     * @param Customer $customer
+     * @return Response
+     */
+    public function rideListByDriver(Request $request,Driver $driver)
+    {
+        $items = $this->rideRepository->findBy(['driver'=>$driver]);
+        $data = [];
+        foreach ($items as $item) {
+            $data[] = [
+                'id' => $item->getId(),
+                'driverid' => $item->getDriver()->getId(),
+                'car_id' => $item->getCar()->getId(),
+                'customer_id' => $item->getCustomer()->getId(),
+                'driver' => $item->getDriver(),
+                'car' => $item->getCar()->getRegistrationNumber(),
+                'customer' => $item->getCustomer(),
+                'amount' => $item->getAmount(),
+                'status' => $item->getStatus(),
+                'endto' => $item->getEndto(),
+                'startto' => $item->getStartto(),
+                'pickupend' => $item->getPickupend(),
+                'pickupbegin' => $item->getPikupbegin(),
+                'latitude_start'=>$item->getLatitudestart(),
+                'latitude_stop'=>$item->getLatitudestop(),
+                'longitude_start'=>$item->getLongitudestart(),
+                'longitude_stop'=>$item->getLongitudestop(),
+                'distance'=>$item->getDistance(),
             ];
         }
         $view = $this->view($data, Response::HTTP_OK, []);

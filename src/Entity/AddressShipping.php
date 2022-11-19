@@ -15,7 +15,8 @@ class AddressShipping
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $name = null;
-
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $address = null;
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $longitude = null;
 
@@ -64,6 +65,22 @@ class AddressShipping
         $this->latitude = $latitude;
 
         return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getAddress(): ?string
+    {
+        return $this->address;
+    }
+
+    /**
+     * @param string|null $address
+     */
+    public function setAddress(?string $address): void
+    {
+        $this->address = $address;
     }
 
     public function getCustomer(): ?Customer
