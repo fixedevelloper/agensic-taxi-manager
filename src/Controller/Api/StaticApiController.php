@@ -856,7 +856,7 @@ class StaticApiController extends AbstractFOSRestController
      */
     public function addressCustomer(Request $request,Customer $customer)
     {
-        $items = $this->addressRepository->findBy(['customer'=>$customer]);
+        $items = $this->addressRepository->findAll();
         $data = [];
         foreach ($items as $item) {
             $data[] = [
