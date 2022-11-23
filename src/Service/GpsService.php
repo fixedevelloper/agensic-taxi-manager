@@ -60,7 +60,7 @@ class GpsService
     }
     function getOneDevise($data)
     {
-        $endpoint = "/396slbHG7506Rlglhglbfj7/deviceinfo";
+        $endpoint = "/396slbHG7506Rlglhglbfj7/locate";
         $reference="";
         $allowed_characters = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
         for ($i = 1; $i <= 15; ++$i) {
@@ -76,7 +76,7 @@ class GpsService
                 'Api-token' => $this->params->get('GPS_API'),
                 'Request-Id' => $reference
             ],
-            'form_params' => json_encode($form),
+            'form_params' => $form,
         ];
         $res = $this->client->post($endpoint, $options);
         return json_decode($res->getBody(), true);

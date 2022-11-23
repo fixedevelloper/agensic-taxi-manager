@@ -510,6 +510,37 @@ class StaticApiController extends AbstractFOSRestController
         return $this->handleView($view);
     }
     /**
+     * @Rest\Get("/v1/rides/one/{id}", name="api_ride_one")
+     * @param Request $request
+     * @return Response
+     */
+    public function rideOne(Request $request,Ride $ride)
+    {
+        $item=$ride;
+        $data = [
+            'id' => $item->getId(),
+            'driverid' => is_null($item->getCar())?null:$item->getDriver()->getId(),
+            'car_id' => is_null($item->getCar())?null:$item->getCar()->getId(),
+            'customer_id' => $item->getCustomer()->getId(),
+            'driver' => is_null($item->getDriver())?"":$item->getDriver(),
+            'car' => is_null($item->getCar())?"":$item->getCar()->getRegistrationNumber(),
+            'customer' => $item->getCustomer()->getCompte()->getName(),
+            'amount' => $item->getAmount(),
+            'status' => $item->getStatus(),
+            'endto' => $item->getEndto(),
+            'startto' => $item->getStartto(),
+            'pickupend' => $item->getPickupend(),
+            'pickupbegin' => $item->getPikupbegin(),
+            'latitude_start'=>$item->getLatitudestart(),
+            'latitude_stop'=>$item->getLatitudestop(),
+            'longitude_start'=>$item->getLongitudestart(),
+            'longitude_stop'=>$item->getLongitudestop(),
+            'distance'=>$item->getDistance(),
+        ];
+        $view = $this->view($data, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+    /**
      * @Rest\Get("/v1/rides", name="api_ride_list")
      * @param Request $request
      * @return Response
@@ -550,7 +581,7 @@ class StaticApiController extends AbstractFOSRestController
      */
     public function rideListPending(Request $request)
     {
-        $items = $this->rideRepository->findBy(['status'=>Ride::STARTING]);
+        $items = $this->rideRepository->findBy(['status'=>Ride::PENDING]);
         $data = [];
         foreach ($items as $item) {
             $data[] = [

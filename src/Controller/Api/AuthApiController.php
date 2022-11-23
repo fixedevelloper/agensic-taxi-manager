@@ -46,6 +46,7 @@ class AuthApiController extends AbstractFOSRestController
     /**
      * @Rest\Post("/v1/api_login", name="api_auth")
      * @param Request $request
+     * @return Response
      */
     public function auth(Request $request)
     {
@@ -75,9 +76,11 @@ class AuthApiController extends AbstractFOSRestController
         $view = $this->view($body, Response::HTTP_OK, []);
         return $this->handleView($view);
     }
+
     /**
      * @Rest\Post("/v1/api_register", name="api_register")
      * @param Request $request
+     * @return Response
      */
     public function register(Request $request)
     {
@@ -96,10 +99,9 @@ class AuthApiController extends AbstractFOSRestController
         if (!empty($data['phone'])){
             $user->setPhone($data['phone']);
         }
-        $user->setRoles(["ROLE_VENDOR"]);
+        $user->setRoles(["ROLE_CUSTOMER"]);
         $user->setIsactivate(true);
         $this->doctrine->persist($user);
-        $date1 = date_create(date("Y-m-d "),new \DateTimeZone('Africa/Brazzaville'));
         $this->doctrine->flush();
         $body=[
             'id'=>$user->getId(),
@@ -110,9 +112,11 @@ class AuthApiController extends AbstractFOSRestController
         $view = $this->view($body, Response::HTTP_OK, []);
         return $this->handleView($view);
     }
+
     /**
      * @Rest\Post("/v1/api_register_shop", name="api_register_shop")
      * @param Request $request
+     * @return Response
      */
     public function registerShop(Request $request)
     {

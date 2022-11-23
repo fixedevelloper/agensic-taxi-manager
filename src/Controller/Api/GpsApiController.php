@@ -95,11 +95,12 @@ class GpsApiController extends AbstractFOSRestController
      */
     public function gpsdeviseOne(Request $request,Car $car)
     {
-      /*  $getdevice=$this->gpsService->getOneDevise([
-            'device_imei'=>$car->getGpsdevice()->getEmei(),
+       $getdevice=$this->gpsService->getOneDevise([
+            //'device_imei'=>$car->getGpsdevice()->getEmei(),
+           'device_imei'=>"153865863307200"
 
-        ]);*/
-        if (is_null($car->getGpsdevice())){
+        ]);
+       /* if (is_null($car->getGpsdevice())){
             $response=[
                 'imei'=>"",
                 'license' => "",
@@ -117,9 +118,9 @@ class GpsApiController extends AbstractFOSRestController
                 'operator'=>$car->getGpsdevice()->getOperator(),
                 'id'=>$car->getGpsdevice()->getId()
             ];
-        }
+        }*/
 
-        $view = $this->view($response, Response::HTTP_OK, []);
+        $view = $this->view($getdevice, Response::HTTP_OK, []);
         return $this->handleView($view);
     }
 
