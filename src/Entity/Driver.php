@@ -15,7 +15,8 @@ class Driver
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-use DateTimeTrait;
+    use DateTimeTrait;
+
     #[ORM\Column]
     private ?bool $status = null;
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
@@ -24,6 +25,8 @@ use DateTimeTrait;
     private ?string $licence = null;
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $cni = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $ipaddress = null;
 
     #[ORM\OneToMany(mappedBy: 'driver', targetEntity: Ride::class)]
     private Collection $rides;
@@ -45,6 +48,22 @@ use DateTimeTrait;
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getIpaddress(): ?string
+    {
+        return $this->ipaddress;
+    }
+
+    /**
+     * @param string|null $ipaddress
+     */
+    public function setIpaddress(?string $ipaddress): void
+    {
+        $this->ipaddress = $ipaddress;
     }
 
     /**
@@ -74,6 +93,7 @@ use DateTimeTrait;
 
         return $this;
     }
+
     public function getCompte(): ?User
     {
         return $this->compte;
@@ -85,6 +105,7 @@ use DateTimeTrait;
 
         return $this;
     }
+
     public function getLicence(): ?string
     {
         return $this->licence;

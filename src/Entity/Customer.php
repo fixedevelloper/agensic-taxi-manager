@@ -14,7 +14,8 @@ class Customer
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
-
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $ipaddress = null;
     #[ORM\Column(nullable: true)]
     private ?int $total_ride = null;
 
@@ -36,6 +37,22 @@ class Customer
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getIpaddress(): ?string
+    {
+        return $this->ipaddress;
+    }
+
+    /**
+     * @param string|null $ipaddress
+     */
+    public function setIpaddress(?string $ipaddress): void
+    {
+        $this->ipaddress = $ipaddress;
     }
 
     public function getTotalRide(): ?int
