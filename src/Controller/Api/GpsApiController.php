@@ -5,6 +5,7 @@ namespace App\Controller\Api;
 
 
 use App\Entity\Car;
+use App\Entity\Driver;
 use App\Entity\GpsDevice;
 use App\Entity\Ride;
 use App\Repository\CarRepository;
@@ -156,6 +157,25 @@ class GpsApiController extends AbstractFOSRestController
         return $this->handleView($view);
     }
 
+    /**
+     * @Rest\Get("/v1/iplocations/driver/{id}", name="api_iplocation_driver")
+     * @param Request $request
+     * @param Driver $driver
+     * @return Response
+     */
+    public function getPositionFromIpService(Request $request,Driver $driver)
+    {
+        $data=$this->iplocationService->getOneIPDevice($driver->getIpaddress());
+        $response=[
+            'ip'=>$data['ip'],
+            'latitude' => $data['latitude'],
+            'longitude' => $data['longitude'],
+            'city' => $data['city'],
+        ];
+
+        $view = $this->view($response, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
     /**
      * @Rest\Post("/v1/iplocations", name="api_iplocation_current")
      * @param Request $request
