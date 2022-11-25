@@ -11,6 +11,7 @@ class Ride
 {
     const PENDING="PENDING";
     const ACCEPTED="ACCEPTED";
+    const CONFIRMED="CONFIRMED";
     const REJECT="REJECT";
     const STARTING="STARTING";
     const FINISH="FINISH";

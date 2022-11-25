@@ -92,7 +92,19 @@ class ActionApiController extends AbstractFOSRestController
         $ride=$this->rideRepository->find($data['ride']);
         $action=$data['action'];
         if ($action=="VALIDATE_DRIVER"){
+            $driver=$this->driverRepository->find($data['driver']);
+            $affectation=$this->affactationRepository->findOneBy(['driver'=>$driver,'enable'=>true]);
+            $ride->setDriver($driver);
+            if (!is_null($affectation)){
+                $ride->setCar($affectation->getCAr());
+            }
+            $ride->setStatus(Ride::CONFIRMED);
+        }
+        if ($action=="STARTING_DRIVER"){
             $ride->setStatus(Ride::STARTING);
+        }
+        if ($action=="FINISH"){
+            $ride->setStatus(Ride::FINISH);
         }
         $this->doctrine->flush();
         $view = $this->view([], Response::HTTP_OK, []);

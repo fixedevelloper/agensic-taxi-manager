@@ -4,8 +4,11 @@
 namespace App\Controller\Api;
 
 
+use App\Entity\Customer;
 use App\Entity\User;
 
+use App\Repository\CustomerRepository;
+use App\Repository\DriverRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
@@ -26,20 +29,26 @@ class AuthApiController extends AbstractFOSRestController
     private $logger;
     private $userRepository;
     private $customerRepository;
+    private $driverRepository;
     private $doctrine;
 
     /**
      * @param EntityManagerInterface $entityManager
      * @param UserRepository $userRepository
+     * @param DriverRepository $driverRepository
+     * @param CustomerRepository $customerRepository
      * @param LoggerInterface $logger
      * @param UserPasswordHasherInterface $passwordEncoder
      */
-    public function __construct(EntityManagerInterface $entityManager,UserRepository $userRepository,
+    public function __construct(EntityManagerInterface $entityManager,
+                                UserRepository $userRepository,DriverRepository $driverRepository,CustomerRepository $customerRepository,
                               LoggerInterface $logger,UserPasswordHasherInterface $passwordEncoder)
     {
         $this->logger = $logger;
         $this->passwordEncoder = $passwordEncoder;
         $this->userRepository=$userRepository;
+        $this->customerRepository=$customerRepository;
+        $this->driverRepository=$driverRepository;
         $this->doctrine=$entityManager;
     }
 
@@ -64,19 +73,61 @@ class AuthApiController extends AbstractFOSRestController
             $view = $this->view([], Response::HTTP_FORBIDDEN, []);
             return $this->handleView($view);
         }
-
+        $driver=$this->driverRepository->findOneBy(['compte'=>$user]);
+        if (is_null($driver)){
+            $view = $this->view([], Response::HTTP_FORBIDDEN, []);
+            return $this->handleView($view);
+        }
         $body=[
-            'id'=>$user->getId(),
+            'id'=>$driver->getId(),
             'name'=>$user->getName(),
             'username'=>$user->getEmail(),
             'password'=>$user->getPhone(),
             'email'=>$user->getEmail(),
+            'phone'=>$user->getPhone(),
             'avatar'=>$user->getAvatar(),
         ];
         $view = $this->view($body, Response::HTTP_OK, []);
         return $this->handleView($view);
     }
-
+    /**
+     * @Rest\Post("/v1/api_login_customer", name="api_auth_customer")
+     * @param Request $request
+     * @return Response
+     */
+    public function authcustomer(Request $request)
+    {
+        $res = json_decode($request->getContent(), true);
+        $data=$res['data'];
+        $email=$data['email'];
+        $password=$data['password'];
+        $user=$this->userRepository->findOneBy(['username'=>$email]);
+        if (null == $user) {
+            $view = $this->view([], Response::HTTP_FORBIDDEN, []);
+            return $this->handleView($view);
+        }
+        $isValid = $this->passwordEncoder->isPasswordValid($user, $password);
+        if (!$isValid) {
+            $view = $this->view([], Response::HTTP_FORBIDDEN, []);
+            return $this->handleView($view);
+        }
+        $customer=$this->customerRepository->findOneBy(['compte'=>$user]);
+        if (is_null($customer)){
+            $view = $this->view([], Response::HTTP_FORBIDDEN, []);
+            return $this->handleView($view);
+        }
+        $body=[
+            'id'=>$customer->getId(),
+            'name'=>$user->getName(),
+            'username'=>$user->getEmail(),
+            'password'=>$user->getPhone(),
+            'email'=>$user->getEmail(),
+            'phone'=>$user->getPhone(),
+            'avatar'=>$user->getAvatar(),
+        ];
+        $view = $this->view($body, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
     /**
      * @Rest\Post("/v1/api_register", name="api_register")
      * @param Request $request
@@ -102,68 +153,15 @@ class AuthApiController extends AbstractFOSRestController
         $user->setRoles(["ROLE_CUSTOMER"]);
         $user->setIsactivate(true);
         $this->doctrine->persist($user);
+        $customer=new Customer();
+        $customer->setCompte($user);
+        $this->doctrine->persist($customer);
         $this->doctrine->flush();
         $body=[
-            'id'=>$user->getId(),
+            'id'=>$customer->getId(),
             'name'=>$user->getName(),
             'email'=>$user->getEmail(),
             'avatar'=>$user->getAvatar(),
-        ];
-        $view = $this->view($body, Response::HTTP_OK, []);
-        return $this->handleView($view);
-    }
-
-    /**
-     * @Rest\Post("/v1/api_register_shop", name="api_register_shop")
-     * @param Request $request
-     * @return Response
-     */
-    public function registerShop(Request $request)
-    {
-        $res = json_decode($request->getContent(), true);
-        $data=$res['data'];
-        $user=new User();
-        $user->setEmail($data['email']);
-        $user->setUsername($data['email']);
-        $user->setName($data['name']);
-        $plainPassword = $data['password'];
-        $hashedPassword = $this->passwordEncoder->hashPassword($user, $plainPassword);
-        $user->setPassword($hashedPassword);
-        if (!empty($data['phone'])){
-            $user->setPhone($data['phone']);
-        }
-        $user->setRoles(["ROLE_VENDOR"]);
-        $user->setIsactivate(true);
-        $this->doctrine->persist($user);
-        $shop = new Shop();
-        $shop->setName($data['name']);
-        $shop->setCity($data['city']);
-        $shop->setAddress($data['address']);
-        $shop->setPhone($data['phone']);
-        $shop->setPhone2($data['phone2']);
-        $shop->setCountry($data['country']);
-        $shop->setCountrycode($data['countrycode']);
-        $shop->setAddress2($data['address2']);
-
-        if (null == $shop->getSlug() || '' == $shop->getSlug()) {
-            $slug = str_replace(' ', '_', strtolower($shop->getName()));
-            $shop->setSlug($slug);
-        } else {
-            $slug = str_replace(' ', '_', strtolower($shop->getSlug()));
-            $shop->setSlug($slug);
-        }
-        if (!empty($data['speciality'])) {
-            $speciality = $this->specialityRepository->find($data['speciality']);
-            $shop->setSpeciality($speciality);
-
-        }
-        $shop->setCompte($user);
-        $this->doctrine->persist($shop);
-        $this->doctrine->flush();
-        $body=[
-            'id'=>$user->getId(),
-            'name'=>$user->getName(),
-            'email'=>$user->getEmail(),
         ];
         $view = $this->view($body, Response::HTTP_OK, []);
         return $this->handleView($view);
