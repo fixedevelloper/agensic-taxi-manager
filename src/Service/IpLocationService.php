@@ -33,6 +33,7 @@ class IpLocationService
     }
     function getOneIPDevice($ip)
     {
+        $ip="129.0.76.187";
         $endpoint = "".$ip."/json";
         $res = $this->client->get($endpoint,
             []);

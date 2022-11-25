@@ -27,7 +27,20 @@ class Driver
     private ?string $cni = null;
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $ipaddress = null;
-
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $callid = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?int $lac = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $radiotype = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $mobilenetworkcode= null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $mobilenetcode = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $countrycode = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $carrier = null;
     #[ORM\OneToMany(mappedBy: 'driver', targetEntity: Ride::class)]
     private Collection $rides;
 
@@ -187,6 +200,118 @@ class Driver
         $this->expiratedPermit = $expiratedPermit;
 
         return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCallid(): ?string
+    {
+        return $this->callid;
+    }
+
+    /**
+     * @param string|null $callid
+     */
+    public function setCallid(?string $callid): void
+    {
+        $this->callid = $callid;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getLac(): ?int
+    {
+        return $this->lac;
+    }
+
+    /**
+     * @param int|null $lac
+     */
+    public function setLac(?int $lac): void
+    {
+        $this->lac = $lac;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getRadiotype(): ?string
+    {
+        return $this->radiotype;
+    }
+
+    /**
+     * @param string|null $radiotype
+     */
+    public function setRadiotype(?string $radiotype): void
+    {
+        $this->radiotype = $radiotype;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getMobilenetworkcode(): ?string
+    {
+        return $this->mobilenetworkcode;
+    }
+
+    /**
+     * @param string|null $mobilenetworkcode
+     */
+    public function setMobilenetworkcode(?string $mobilenetworkcode): void
+    {
+        $this->mobilenetworkcode = $mobilenetworkcode;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getMobilenetcode(): ?string
+    {
+        return $this->mobilenetcode;
+    }
+
+    /**
+     * @param string|null $mobilenetcode
+     */
+    public function setMobilenetcode(?string $mobilenetcode): void
+    {
+        $this->mobilenetcode = $mobilenetcode;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCountrycode(): ?string
+    {
+        return $this->countrycode;
+    }
+
+    /**
+     * @param string|null $countrycode
+     */
+    public function setCountrycode(?string $countrycode): void
+    {
+        $this->countrycode = $countrycode;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCarrier(): ?string
+    {
+        return $this->carrier;
+    }
+
+    /**
+     * @param string|null $carrier
+     */
+    public function setCarrier(?string $carrier): void
+    {
+        $this->carrier = $carrier;
     }
 
 }

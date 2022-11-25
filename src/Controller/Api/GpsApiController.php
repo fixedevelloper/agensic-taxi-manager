@@ -11,6 +11,7 @@ use App\Entity\Ride;
 use App\Repository\CarRepository;
 use App\Repository\DriverRepository;
 use App\Repository\GpsDeviceRepository;
+use App\Service\GeoLocalisationService;
 use App\Service\GpsService;
 use App\Service\IpLocationService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -35,6 +36,7 @@ class GpsApiController extends AbstractFOSRestController
     private GpsDeviceRepository $gpedeviceRepository;
     private IpLocationService $iplocationService;
     private DriverRepository $driverRepository;
+    private GeoLocalisationService $geolocationService;
 
     /**
      * GpsApiController constructor.
@@ -46,7 +48,7 @@ class GpsApiController extends AbstractFOSRestController
      * @param GpsDeviceRepository $gpedeviceRepository
      */
     public function __construct(IpLocationService $ipLocationService,LoggerInterface $logger,DriverRepository $driverRepository,
-                                GpsService $gpsService, EntityManagerInterface $doctrine,
+                                GpsService $gpsService, EntityManagerInterface $doctrine,GeoLocalisationService $geoLocalisationService,
                                 CarRepository $carRepository, GpsDeviceRepository $gpedeviceRepository)
     {
         $this->logger = $logger;
@@ -56,6 +58,7 @@ class GpsApiController extends AbstractFOSRestController
         $this->gpedeviceRepository = $gpedeviceRepository;
         $this->iplocationService=$ipLocationService;
         $this->driverRepository=$driverRepository;
+        $this->geolocationService=$geoLocalisationService;
     }
 
     /**
@@ -177,6 +180,31 @@ class GpsApiController extends AbstractFOSRestController
         return $this->handleView($view);
     }
     /**
+     * @Rest\Get("/v1/iplocations/driver/{id}/goole", name="api_iplocation_driver_goole")
+     * @param Request $request
+     * @param Driver $driver
+     * @return Response
+     */
+    public function getPositionFromGoogleservice(Request $request,Driver $driver)
+    {
+        $data_=[
+            'homeMobileCountryCode' => $driver->getCountrycode(),
+            'homeMobileNetworkCode' => $driver->getMobilenetworkcode(),
+            'radioType' => $driver->getRadiotype(),
+            'carrier' => $driver->getCarrier(),
+            'cellId'=>$driver->getCallid(),
+        ];
+        $data=$this->geolocationService->geoLocalisation($data_);
+        $response=[
+            'latitude' => $data['location']['lat'],
+            'longitude' => $data['location']['lng'],
+            'accuracy' => $data['accuracy'],
+        ];
+
+        $view = $this->view($response, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+    /**
      * @Rest\Post("/v1/iplocations", name="api_iplocation_current")
      * @param Request $request
      * @param Car $car
@@ -198,5 +226,32 @@ class GpsApiController extends AbstractFOSRestController
         $view = $this->view($response, Response::HTTP_OK, []);
         return $this->handleView($view);
     }
-
+    /**
+     * @Rest\Post("/v1/iplocations/carrierinfos", name="api_iplocation_current_carrierinfo")
+     * @param Request $request
+     * @param Car $car
+     * @return Response
+     * @throws InternalErrorException
+     */
+    public function getPositioncurrentcarrierinfo(Request $request)
+    {
+        $res = json_decode($request->getContent(), true);
+        $data = $res['data'];
+        $driver=$this->driverRepository->find($data['driver']);
+        if (is_null($driver)){
+            throw new InternalErrorException("Access not Authorized");
+        }
+        $driver->setCallid($data['callid']);
+        $driver->setCarrier($data['carrier']);
+        $driver->setLac($data['lac']);
+        $driver->setMobilenetcode($data['mcn']);
+        $driver->setMobilenetworkcode($data['ipaddress']);
+        $driver->setRadiotype($data['radiotype']);
+        $driver->setCountrycode($data['countrycode']);
+        $this->doctrine->flush();
+        $response=[
+        ];
+        $view = $this->view($response, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
 }

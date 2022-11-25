@@ -32,21 +32,26 @@ class GeoLocalisationService
     }
     function geoLocalisation($data){
         $endpoint = "geolocate?";
-        $form = [
-            'homeMobileCountryCode' => $data['homeMobileCountryCode'],
-            'homeMobileNetworkCode' => $data['homeMobileNetworkCode'],
-            'radioType' => "gms",
-            'considerIp'=>true,
-            'carrier' => $data['operateur'],
-            'cellTowers' => [],
-            'wifiAccessPoints' => [],
-        ];
         $wifiAccessPoints=[
 
         ];
         $cellTowers=[
-
+            'cellId'=>$data['cellId'],
+            'newRadioCellId'=>$data['newRadioCellId'],
+            'locationAreaCode'=>$data[''],
+            'mobileCountryCode'=>$data['homeMobileCountryCode'],
+            'mobileNetworkCode'=>$data['homeMobileNetworkCode']
         ];
+        $form = [
+            'homeMobileCountryCode' => $data['homeMobileCountryCode'],
+            'homeMobileNetworkCode' => $data['homeMobileNetworkCode'],
+            'radioType' => $data['radioType'],
+            'considerIp'=>true,
+            'carrier' => $data['carrier'],
+            'cellTowers' => [$cellTowers],
+            'wifiAccessPoints' => $wifiAccessPoints,
+        ];
+
         $options = [
             'headers' => [
                 'Accept' => 'application/x-www-form-urlencoded',
