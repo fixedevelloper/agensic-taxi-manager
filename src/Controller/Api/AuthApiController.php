@@ -160,7 +160,10 @@ class AuthApiController extends AbstractFOSRestController
         $body=[
             'id'=>$customer->getId(),
             'name'=>$user->getName(),
+           'username'=>$user->getEmail(),
+            'password'=>$user->getPhone(),
             'email'=>$user->getEmail(),
+            'phone'=>$user->getPhone(),
             'avatar'=>$user->getAvatar(),
         ];
         $view = $this->view($body, Response::HTTP_OK, []);
