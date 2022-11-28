@@ -99,9 +99,9 @@ class AuthApiController extends AbstractFOSRestController
     {
         $res = json_decode($request->getContent(), true);
         $data=$res['data'];
-        $email=$data['email'];
+        $email=$data['phone'];
         $password=$data['password'];
-        $user=$this->userRepository->findOneBy(['username'=>$email]);
+        $user=$this->userRepository->findOneBy(['phone'=>$email]);
         if (null == $user) {
             $view = $this->view([], Response::HTTP_FORBIDDEN, []);
             return $this->handleView($view);
@@ -123,7 +123,7 @@ class AuthApiController extends AbstractFOSRestController
             'password'=>$user->getPhone(),
             'email'=>$user->getEmail(),
             'phone'=>$user->getPhone(),
-            'avatar'=>$user->getAvatar(),
+            'avatar'=>"",
         ];
         $view = $this->view($body, Response::HTTP_OK, []);
         return $this->handleView($view);
@@ -164,7 +164,7 @@ class AuthApiController extends AbstractFOSRestController
             'password'=>$user->getPhone(),
             'email'=>$user->getEmail(),
             'phone'=>$user->getPhone(),
-            'avatar'=>$user->getAvatar(),
+            'avatar'=>"",
         ];
         $view = $this->view($body, Response::HTTP_OK, []);
         return $this->handleView($view);
