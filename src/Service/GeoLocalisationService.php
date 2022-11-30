@@ -31,14 +31,13 @@ class GeoLocalisationService
         ]);
     }
     function geoLocalisation($data){
-        $endpoint = "geolocate?";
+        $endpoint = "geolocate?key=AIzaSyCLsG4-VDQDTb9TYM5MdjIyLRv2dTR60NI";
         $wifiAccessPoints=[
 
         ];
         $cellTowers=[
             'cellId'=>$data['cellId'],
-            'newRadioCellId'=>$data['newRadioCellId'],
-            'locationAreaCode'=>$data[''],
+            'locationAreaCode'=>$data['lac'],
             'mobileCountryCode'=>$data['homeMobileCountryCode'],
             'mobileNetworkCode'=>$data['homeMobileNetworkCode']
         ];
@@ -54,11 +53,11 @@ class GeoLocalisationService
 
         $options = [
             'headers' => [
-                'Accept' => 'application/x-www-form-urlencoded',
-                'Content-Type' => 'application/x-www-form-urlencoded',
-                'key' => $this->params->get('GOOGLE_API_KEY'),
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'key' => "AIzaSyCLsG4-VDQDTb9TYM5MdjIyLRv2dTR60NI",
             ],
-            'form_params' => $form,
+            'json' => $form,
         ];
         $res = $this->client->post($endpoint, $options);
         return json_decode($res->getBody(), true);

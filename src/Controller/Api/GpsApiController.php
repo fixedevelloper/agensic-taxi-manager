@@ -180,7 +180,7 @@ class GpsApiController extends AbstractFOSRestController
         return $this->handleView($view);
     }
     /**
-     * @Rest\Get("/v1/iplocations/driver/{id}/goole", name="api_iplocation_driver_goole")
+     * @Rest\Get("/v1/iplocations/driver/{id}/google", name="api_iplocation_driver_goole")
      * @param Request $request
      * @param Driver $driver
      * @return Response
@@ -189,10 +189,11 @@ class GpsApiController extends AbstractFOSRestController
     {
         $data_=[
             'homeMobileCountryCode' => $driver->getCountrycode(),
-            'homeMobileNetworkCode' => $driver->getMobilenetworkcode(),
+            'homeMobileNetworkCode' => $driver->getMobilenetcode(),
             'radioType' => $driver->getRadiotype(),
             'carrier' => $driver->getCarrier(),
             'cellId'=>$driver->getCallid(),
+            'lac'=>$driver->getLac(),
         ];
         $data=$this->geolocationService->geoLocalisation($data_);
         $response=[
