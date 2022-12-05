@@ -808,6 +808,29 @@ class StaticApiController extends AbstractFOSRestController
         $view = $this->view($data, Response::HTTP_OK, []);
         return $this->handleView($view);
     }
+
+    /**
+     * @Rest\Get("/v1/places/{id}", name="api_place_one")
+     * @param Request $request
+     * @param Place $place
+     * @return Response
+     */
+    public function placeOne(Request $request,Place $place)
+    {
+            $data = [
+                'id' => $place->getId(),
+                'name' => $place->getName(),
+                'phone' => $place->getPhone(),
+                'address' => $place->getAddress(),
+                'propretaire' => $place->getPropretaire()->getId(),
+                'bp' => $place->getBp(),
+                'latitude' => $place->getLatitude(),
+                'longitude' => $place->getLongitude(),
+            ];
+
+        $view = $this->view($data, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
     /**
      * @Rest\Get("/v1/shippings", name="api_shippings_list")
      * @param Request $request

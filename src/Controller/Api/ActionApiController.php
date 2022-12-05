@@ -122,4 +122,23 @@ class ActionApiController extends AbstractFOSRestController
     private function sendNotificationAdministration(){
 
     }
+    /**
+     * @Rest\Post("/v1/rides/actions", name="api_ride_action")
+     * @param Request $request
+     * @return Response
+     */
+    public function getPrice(Request $request)
+    {
+        $res = json_decode($request->getContent(), true);
+        $data = $res['data'];
+        $distance=$data['distance'];
+        $configuration=$this->configurationRepository->findOneByLast();
+        $price=$distance*$configuration->getTarifkm();
+        $view = $this->view([
+            "price"=>$price,
+            "durre_minute"=>0,
+            "durre_heure"=>0
+        ], Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
 }

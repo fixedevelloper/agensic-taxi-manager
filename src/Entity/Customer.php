@@ -28,10 +28,14 @@ class Customer
     #[ORM\OneToMany(mappedBy: 'customer', targetEntity: AddressShipping::class)]
     private Collection $addresses;
 
+    #[ORM\OneToMany(mappedBy: 'customer', targetEntity: Shipping::class)]
+    private Collection $shippings;
+
     public function __construct()
     {
         $this->rides = new ArrayCollection();
         $this->addresses = new ArrayCollection();
+        $this->shippings = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -137,6 +141,36 @@ class Customer
             // set the owning side to null (unless already changed)
             if ($address->getCustomer() === $this) {
                 $address->setCustomer(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Shipping>
+     */
+    public function getShippings(): Collection
+    {
+        return $this->shippings;
+    }
+
+    public function addShipping(Shipping $shipping): self
+    {
+        if (!$this->shippings->contains($shipping)) {
+            $this->shippings->add($shipping);
+            $shipping->setCustomer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeShipping(Shipping $shipping): self
+    {
+        if ($this->shippings->removeElement($shipping)) {
+            // set the owning side to null (unless already changed)
+            if ($shipping->getCustomer() === $this) {
+                $shipping->setCustomer(null);
             }
         }
 

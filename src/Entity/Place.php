@@ -39,9 +39,13 @@ class Place
     #[ORM\OneToMany(mappedBy: 'place', targetEntity: Shipping::class)]
     private Collection $shippings;
 
+    #[ORM\OneToMany(mappedBy: 'place', targetEntity: Category::class)]
+    private Collection $categories;
+
     public function __construct()
     {
         $this->shippings = new ArrayCollection();
+        $this->categories = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -157,6 +161,36 @@ class Place
             // set the owning side to null (unless already changed)
             if ($shipping->getPlace() === $this) {
                 $shipping->setPlace(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Category>
+     */
+    public function getCategories(): Collection
+    {
+        return $this->categories;
+    }
+
+    public function addCategory(Category $category): self
+    {
+        if (!$this->categories->contains($category)) {
+            $this->categories->add($category);
+            $category->setPlace($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCategory(Category $category): self
+    {
+        if ($this->categories->removeElement($category)) {
+            // set the owning side to null (unless already changed)
+            if ($category->getPlace() === $this) {
+                $category->setPlace(null);
             }
         }
 
