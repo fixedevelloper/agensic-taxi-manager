@@ -198,12 +198,39 @@ class EatsController extends AbstractFOSRestController
     }
 
     /**
-     * @Rest\Get("/v1/articles/{place}", name="api_article_list")
+     * @Rest\Get("/v1/articles/{place}", name="api_article_list_place")
      * @param Request $request
      * @param Place $place
      * @return Response
      */
-    public function articleList(Request $request, Place $place)
+    public function articleListPlace(Request $request, Place $place)
+    {
+        $items = $this->articleRepository->findAll();
+        $data = [];
+        foreach ($items as $item) {
+            $image = $item->getImage();
+            $data[] = [
+                'id' => $item->getId(),
+                'name' => $item->getName(),
+                'description' => $item->getDescription(),
+                'price' => $item->getPrice(),
+                'category' => $item->getCategory()->getId(),
+                'category_name' => $item->getCategory()->getName(),
+                'status' => $item->getStatus(),
+                'image' => is_null($image) ? "" : $this->getParameter('domaininit') . $image->getSrc(),
+            ];
+        }
+        $view = $this->view($data, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+
+    /**
+     * @Rest\Get("/v1/articles", name="api_article_list")
+     * @param Request $request
+     * @param Place $place
+     * @return Response
+     */
+    public function articleList(Request $request)
     {
         $items = $this->articleRepository->findAll();
         $data = [];
@@ -273,6 +300,75 @@ class EatsController extends AbstractFOSRestController
                 'image' => is_null($image) ? "" : $this->getParameter('domaininit') . $image->getSrc(),
             ];
         }
+        $view = $this->view($data, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+
+    /**
+     * @Rest\Get("/v1/places/detail/{place}", name="api_placedetail_list")
+     * @param Request $request
+     * @param Place $place
+     * @return Response
+     */
+    public function placeDetail(Request $request, Place $place)
+    {
+
+        $image = $place->getImage();
+        $categories = [];
+        foreach ($place->getCategories() as $item) {
+            $image = $item->getImage();
+            $categories[] = [
+                'id' => $item->getId(),
+                'name' => $item->getName(),
+                'description' => $item->getDescription(),
+                'image' => is_null($image) ? "" : $this->getParameter('domaininit') . $image->getSrc(),
+            ];
+        }
+        $drinks = [];
+        $foods = [];
+        $articles = $this->articleRepository->findByPlace($place);
+        $list_foods = array_filter($articles, function ($item) {
+            return $item->getType() == "food";
+        });
+        $list_drink = array_filter($articles, function ($item) {
+            return $item->getType() == "drink";
+        });
+        foreach ($articles as $food) {
+            $foods[] = [
+                'name' => $food->getName(),
+                'price' => $food->getPrice(),
+                'description' => $food->getDescription(),
+                'image' => is_null($food->getImage()) ? "" : $this->getParameter('domaininit') . $food->getImage()->getSrc(),
+            ];
+        }
+        foreach ($articles as $drink) {
+            $drinks[] = [
+                'name' => $drink->getName(),
+                'price' => $drink->getPrice(),
+                'description' => $drink->getDescription(),
+                'image' => is_null($drink->getImage()) ? "" : $this->getParameter('domaininit') . $drink->getImage()->getSrc(),
+            ];
+        }
+        $menu = [
+            'foods' => $foods,
+            'drinks' => $drinks
+        ];
+        $data = [
+            'id' => $place->getId(),
+            'name' => $place->getName(),
+            'description' => $place->getName(),
+            'city' => $place->getAddress(),
+            'phone' => $place->getPhone(),
+            'bp' => $place->getBp(),
+            'rating' => is_null($place->getRating())?0:$place->getRating(),
+            'latitude' => "place->getLatitude()",
+            'longitude' => "place->getLongitude()",
+            'categories' => $categories,
+            'reviews' => [],
+            'menus' => $menu,
+            'image' => is_null($image) ? "" : $this->getParameter('domaininit') . $image->getSrc(),
+        ];
+
         $view = $this->view($data, Response::HTTP_OK, []);
         return $this->handleView($view);
     }

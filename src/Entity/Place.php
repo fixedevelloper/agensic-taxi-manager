@@ -6,6 +6,7 @@ use App\Repository\PlaceRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use phpDocumentor\Reflection\Types\Integer;
 
 #[ORM\Entity(repositoryClass: PlaceRepository::class)]
 class Place
@@ -32,7 +33,8 @@ class Place
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $latitude = null;
-
+    #[ORM\Column(nullable: true)]
+    private ?int $rating = 0;
     #[ORM\ManyToOne(inversedBy: 'places')]
     private ?Proprietaire $propretaire = null;
 
@@ -41,7 +43,8 @@ class Place
 
     #[ORM\OneToMany(mappedBy: 'place', targetEntity: Category::class)]
     private Collection $categories;
-
+    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
+    private ?Image $image = null;
     public function __construct()
     {
         $this->shippings = new ArrayCollection();
@@ -63,6 +66,22 @@ class Place
         $this->name = $name;
 
         return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getRating(): ?int
+    {
+        return $this->rating;
+    }
+
+    /**
+     * @param int|null $rating
+     */
+    public function setRating(?int $rating): void
+    {
+        $this->rating = $rating;
     }
 
     public function getPhone(): ?string
@@ -193,6 +212,18 @@ class Place
                 $category->setPlace(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getImage(): ?Image
+    {
+        return $this->image;
+    }
+
+    public function setImage(?Image $image): self
+    {
+        $this->image = $image;
 
         return $this;
     }

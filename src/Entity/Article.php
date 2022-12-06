@@ -26,7 +26,8 @@ class Article
 
     #[ORM\Column(length: 255)]
     private ?string $status = null;
-
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $type= null;
     #[ORM\ManyToOne(inversedBy: 'articles')]
     private ?Category $category = null;
 
@@ -53,6 +54,22 @@ class Article
     public function getDescription(): ?string
     {
         return $this->description;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    /**
+     * @param string|null $type
+     */
+    public function setType(?string $type): void
+    {
+        $this->type = $type;
     }
 
     public function setDescription(?string $description): self
