@@ -335,6 +335,7 @@ class EatsController extends AbstractFOSRestController
         });
         foreach ($articles as $food) {
             $foods[] = [
+                'id' => $food->getId(),
                 'name' => $food->getName(),
                 'price' => $food->getPrice(),
                 'description' => $food->getDescription(),
@@ -343,6 +344,7 @@ class EatsController extends AbstractFOSRestController
         }
         foreach ($articles as $drink) {
             $drinks[] = [
+                 'id' => $drink->getId(),
                 'name' => $drink->getName(),
                 'price' => $drink->getPrice(),
                 'description' => $drink->getDescription(),
