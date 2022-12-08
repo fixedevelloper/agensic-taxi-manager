@@ -22,6 +22,7 @@ use App\Repository\CarRepository;
 use App\Repository\ConfigurationRepository;
 use App\Repository\CustomerRepository;
 use App\Repository\DriverRepository;
+use App\Repository\ImageRepository;
 use App\Repository\PlaceRepository;
 use App\Repository\ProprietaireRepository;
 use App\Repository\RideRepository;
@@ -56,8 +57,11 @@ class StaticApiController extends AbstractFOSRestController
     private AddressShippingRepository $addressRepository;
     private EntityManagerInterface $doctrine;
     private ShippingRepository $shippingRepository;
+    private ImageRepository $imageRepository;
 
     /**
+     * @param ImageRepository $imageRepository
+     * @param ShippingRepository $shippingRepository
      * @param PlaceRepository $placeRepository
      * @param AddressShippingRepository $addressRepository
      * @param ConfigurationRepository $configurationRepository
@@ -72,7 +76,7 @@ class StaticApiController extends AbstractFOSRestController
      * @param LoggerInterface $logger
      * @param UserPasswordHasherInterface $passwordEncoder
      */
-    public function __construct(ShippingRepository $shippingRepository,PlaceRepository $placeRepository,AddressShippingRepository $addressRepository,ConfigurationRepository $configurationRepository,EntityManagerInterface $entityManager,UserRepository $userRepository,AffectationRideRepository $affectationRideRepository,
+    public function __construct(ImageRepository $imageRepository, ShippingRepository $shippingRepository,PlaceRepository $placeRepository,AddressShippingRepository $addressRepository,ConfigurationRepository $configurationRepository,EntityManagerInterface $entityManager,UserRepository $userRepository,AffectationRideRepository $affectationRideRepository,
                                 ProprietaireRepository $propretaireRepository,CarRepository $carRepository,
                                 DriverRepository $driverRepository,RideRepository $rideRepository,CustomerRepository $customerRepository,
                                 LoggerInterface $logger,UserPasswordHasherInterface $passwordEncoder)
@@ -90,6 +94,7 @@ class StaticApiController extends AbstractFOSRestController
         $this->addressRepository=$addressRepository;
         $this->placeRepository=$placeRepository;
         $this->shippingRepository=$shippingRepository;
+        $this->imageRepository = $imageRepository;
         $this->doctrine=$entityManager;
     }
 
@@ -312,6 +317,10 @@ class StaticApiController extends AbstractFOSRestController
         $item->setName($data['name']);
         $item->setAddress($data['address']);
         $item->setBp($data['bp']);
+        if (!empty($data['image'])) {
+            $image = $this->imageRepository->find($data['image']);
+            $item->setImage($image);
+        }
         $item->setLatitude($data['latitude']);
         $item->setLongitude($data['longitude']);
         $this->doctrine->flush();
@@ -817,6 +826,7 @@ class StaticApiController extends AbstractFOSRestController
      */
     public function placeOne(Request $request,Place $place)
     {
+        $image = $place->getImage();
             $data = [
                 'id' => $place->getId(),
                 'name' => $place->getName(),
@@ -826,6 +836,8 @@ class StaticApiController extends AbstractFOSRestController
                 'bp' => $place->getBp(),
                 'latitude' => $place->getLatitude(),
                 'longitude' => $place->getLongitude(),
+                'imageid'=>is_null($image)? null:$image->getId(),
+                'image' => is_null($image) ? "" : $this->getParameter('domaininit') . $image->getSrc(),
             ];
 
         $view = $this->view($data, Response::HTTP_OK, []);

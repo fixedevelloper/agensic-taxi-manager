@@ -182,7 +182,6 @@ class EatsController extends AbstractFOSRestController
             $this->doctrine->persist($article);
         } else {
             $article = $this->articleRepository->find($data['id']);
-            $article->setStatus($data['status']);
         }
         $article->setName($data['name']);
         $article->setDescription($data['description']);
@@ -216,6 +215,7 @@ class EatsController extends AbstractFOSRestController
                 'category' => $item->getCategory()->getId(),
                 'category_name' => $item->getCategory()->getName(),
                 'status' => $item->getStatus(),
+                'imageid'=>$image->getId(),
                 'image' => is_null($image) ? "" : $this->getParameter('domaininit') . $image->getSrc(),
             ];
        
@@ -242,6 +242,7 @@ class EatsController extends AbstractFOSRestController
                 'category' => $item->getCategory()->getId(),
                 'category_name' => $item->getCategory()->getName(),
                 'status' => $item->getStatus(),
+                'imageid'=>$image->getId(),
                 'image' => is_null($image) ? "" : $this->getParameter('domaininit') . $image->getSrc(),
             ];
         }
@@ -269,6 +270,7 @@ class EatsController extends AbstractFOSRestController
                 'category' => $item->getCategory()->getId(),
                 'category_name' => $item->getCategory()->getName(),
                 'status' => $item->getStatus(),
+                'imageid'=>$image->getId(),
                 'image' => is_null($image) ? "" : $this->getParameter('domaininit') . $image->getSrc(),
             ];
         }
@@ -296,6 +298,7 @@ class EatsController extends AbstractFOSRestController
                 'category' => $item->getCategory()->getId(),
                 'category_name' => $item->getCategory()->getName(),
                 'status' => $item->getStatus(),
+                'imageid'=>$image->getId(),
                 'image' => is_null($image) ? "" : $this->getParameter('domaininit') . $image->getSrc(),
             ];
         }
