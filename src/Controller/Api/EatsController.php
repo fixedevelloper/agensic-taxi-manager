@@ -205,7 +205,7 @@ class EatsController extends AbstractFOSRestController
      */
     public function articleListPlace(Request $request, Place $place)
     {
-        $items = $this->articleRepository->findAll();
+        $items = $this->articleRepository->findByPlace($place);
         $data = [];
         foreach ($items as $item) {
             $image = $item->getImage();
@@ -361,14 +361,38 @@ class EatsController extends AbstractFOSRestController
             'phone' => $place->getPhone(),
             'bp' => $place->getBp(),
             'rating' => is_null($place->getRating())?0:$place->getRating(),
-            'latitude' => "place->getLatitude()",
-            'longitude' => "place->getLongitude()",
+            'latitude' => $place->getLatitude(),
+            'longitude' => $place->getLongitude(),
             'categories' => $categories,
             'reviews' => [],
             'menus' => $menu,
             'image' => is_null($image) ? "" : $this->getParameter('domaininit') . $image->getSrc(),
         ];
 
+        $view = $this->view($data, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+
+    /**
+     * @Rest\Get("/v1/places/article/{article}", name="api_placearticle_list")
+     * @param Request $request
+     * @param Article $article
+     * @return Response
+     */
+    public function placeByArticle(Request $request, Article $article)
+    {
+        $item= $article->getCategory()->getPlace();
+        $data=[
+            'id' => $item->getId(),
+            'name' => $item->getName(),
+            'phone' => $item->getPhone(),
+            'address' => $item->getAddress(),
+            'propretaire' => $item->getPropretaire()->getId(),
+            'bp' => $item->getBp(),
+            'latitude' => $item->getLatitude(),
+            'longitude' => $item->getLongitude(),
+
+        ];
         $view = $this->view($data, Response::HTTP_OK, []);
         return $this->handleView($view);
     }
