@@ -10,6 +10,7 @@ use App\Entity\Car;
 use App\Entity\Configuration;
 use App\Entity\Customer;
 use App\Entity\Driver;
+use App\Entity\LineShipping;
 use App\Entity\Place;
 use App\Entity\Proprietaire;
 use App\Entity\Ride;
@@ -18,6 +19,7 @@ use App\Entity\User;
 use App\Entity\Wallet;
 use App\Repository\AddressShippingRepository;
 use App\Repository\AffectationRideRepository;
+use App\Repository\ArticleRepository;
 use App\Repository\CarRepository;
 use App\Repository\ConfigurationRepository;
 use App\Repository\CustomerRepository;
@@ -58,7 +60,7 @@ class StaticApiController extends AbstractFOSRestController
     private EntityManagerInterface $doctrine;
     private ShippingRepository $shippingRepository;
     private ImageRepository $imageRepository;
-
+    private ArticleRepository $articleRepository;
     /**
      * @param ImageRepository $imageRepository
      * @param ShippingRepository $shippingRepository
@@ -76,7 +78,7 @@ class StaticApiController extends AbstractFOSRestController
      * @param LoggerInterface $logger
      * @param UserPasswordHasherInterface $passwordEncoder
      */
-    public function __construct(ImageRepository $imageRepository, ShippingRepository $shippingRepository,PlaceRepository $placeRepository,AddressShippingRepository $addressRepository,ConfigurationRepository $configurationRepository,EntityManagerInterface $entityManager,UserRepository $userRepository,AffectationRideRepository $affectationRideRepository,
+    public function __construct(ImageRepository $imageRepository,ArticleRepository $articleRepository, ShippingRepository $shippingRepository,PlaceRepository $placeRepository,AddressShippingRepository $addressRepository,ConfigurationRepository $configurationRepository,EntityManagerInterface $entityManager,UserRepository $userRepository,AffectationRideRepository $affectationRideRepository,
                                 ProprietaireRepository $propretaireRepository,CarRepository $carRepository,
                                 DriverRepository $driverRepository,RideRepository $rideRepository,CustomerRepository $customerRepository,
                                 LoggerInterface $logger,UserPasswordHasherInterface $passwordEncoder)
@@ -95,6 +97,7 @@ class StaticApiController extends AbstractFOSRestController
         $this->placeRepository=$placeRepository;
         $this->shippingRepository=$shippingRepository;
         $this->imageRepository = $imageRepository;
+        $this->articleRepository = $articleRepository;
         $this->doctrine=$entityManager;
     }
 
@@ -367,13 +370,30 @@ class StaticApiController extends AbstractFOSRestController
             $item = $this->shippingRepository->find($data['id']);
         } else {
             $item = new Shipping();
-            $address=$this->addressRepository->find($data['address']);
             $place=$this->placeRepository->find($data['place']);
-            $item->setAddress($address);
+            $customer=$this->customerRepository->find($data['customer']);
             $item->setPlace($place);
+            $item->setCustomer($customer);
             $this->doctrine->persist($item);
+            $lines=$data['lines'];
+            for ($i=0;$i<sizeof($lines);$i++){
+                $line=new LineShipping();
+                $line->setAmount($lines[$i]['amount']);
+                $line->setQuantity($lines[$i]['quantity']);
+                $article=$this->articleRepository->find($lines[$i]['article']);
+                $line->setArticle($article);
+                $line->setShipping($item);
+                $this->doctrine->persist($line);
+            }
         }
+        $item->setAddress($data['address']);
         $item->setDistance($data['distance']);
+        $item->setTotal($data['total']);
+        $item->setPriceshipping($data['priceshipping']);
+        $item->setLatEnd($data['latend']);
+        $item->setLatStart($data['latstart']);
+        $item->setLngEnd($data['lngend']);
+        $item->setLngStart($data['lngstart']);
         $item->setStatus(Shipping::PENDING);
         $this->doctrine->flush();
         $view = $this->view([], Response::HTTP_OK, []);
@@ -853,15 +873,109 @@ class StaticApiController extends AbstractFOSRestController
         $items = $this->shippingRepository->findAll();
         $data = [];
         foreach ($items as $item) {
+            $lines_=[];
+            $lines=$item->getLineShippings();
+            foreach ($lines as $line){
+                $lines_[]=[
+                   'article'=>$line->getArticle()->getName(),
+                   'amount'=>$line->getAmount(),
+                    'quantity'=>$line->getQuantity(),
+                ];
+            }
             $data[] = [
                 'id' => $item->getId(),
-                'addressname' => $item->getAddress()->getName(),
                 'distance' => $item->getDistance(),
-                'addressid' => $item->getAddress()->getId(),
                 'placeid' => $item->getPlace()->getId(),
                 'placename' => $item->getPlace()->getName(),
                 'status' => $item->getStatus(),
                 'createdat' => $item->getDateCreated(),
+                'sourcelat' => $item->getLatStart(),
+                'sourcelng' => $item->getLngStart(),
+                'destinationlat' => $item->getLatEnd(),
+                'destinationlng' => $item->getLngEnd(),
+                'priceshipping' => $item->getPriceshipping(),
+                'total' => $item->getTotal(),
+                'customerid' => $item->getCustomer()->getId(),
+                'customername' => $item->getCustomer()->getCompte()->getName(),
+                'lines'=>$lines_
+            ];
+        }
+        $view = $this->view($data, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+    /**
+     * @Rest\Get("/v1/shippings/{id}", name="api_shippings_one")
+     * @param Request $request
+     * @return Response
+     */
+    public function shippingOne(Request $request,Shipping $shipping)
+    {
+            $lines_=[];
+            $lines=$shipping->getLineShippings();
+            foreach ($lines as $line){
+                $lines_[]=[
+                    'article'=>$line->getArticle()->getName(),
+                    'amount'=>$line->getAmount(),
+                    'quantity'=>$line->getQuantity(),
+                ];
+            }
+            $item=$shipping;
+            $data= [
+                'id' => $item->getId(),
+                'distance' => $item->getDistance(),
+                'placeid' => $item->getPlace()->getId(),
+                'placename' => $item->getPlace()->getName(),
+                'status' => $item->getStatus(),
+                'createdat' => $item->getDateCreated(),
+                'sourcelat' => $item->getLatStart(),
+                'sourcelng' => $item->getLngStart(),
+                'destinationlat' => $item->getLatEnd(),
+                'destinationlng' => $item->getLngEnd(),
+                'priceshipping' => $item->getPriceshipping(),
+                'total' => $item->getTotal(),
+                'customerid' => $item->getCustomer()->getId(),
+                'customername' => $item->getCustomer()->getCompte()->getName(),
+                'lines'=>$lines_
+            ];
+
+        $view = $this->view($data, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+    /**
+     * @Rest\Get("/v1/shippings/customer/{customer}", name="api_shippings_customer")
+     * @param Request $request
+     * @return Response
+     */
+    public function shippingByCustomer(Request $request,Customer $customer)
+    {
+        $items = $this->shippingRepository->findBy(['customer'=>$customer]);
+        $data = [];
+        foreach ($items as $item) {
+            $lines_=[];
+            $lines=$item->getLineShippings();
+            foreach ($lines as $line){
+                $lines_[]=[
+                    'article'=>$line->getArticle()->getName(),
+                    'amount'=>$line->getAmount(),
+                    'quantity'=>$line->getQuantity(),
+                ];
+            }
+            $data[] = [
+                'id' => $item->getId(),
+                'distance' => $item->getDistance(),
+                'placeid' => $item->getPlace()->getId(),
+                'placename' => $item->getPlace()->getName(),
+                'status' => $item->getStatus(),
+                'createdat' => $item->getDateCreated(),
+                'sourcelat' => $item->getLatStart(),
+                'sourcelng' => $item->getLngStart(),
+                'destinationlat' => $item->getLatEnd(),
+                'destinationlng' => $item->getLngEnd(),
+                'priceshipping' => $item->getPriceshipping(),
+                'total' => $item->getTotal(),
+                'customerid' => $item->getCustomer()->getId(),
+                'customername' => $item->getCustomer()->getCompte()->getName(),
+                'lines'=>$lines_
             ];
         }
         $view = $this->view($data, Response::HTTP_OK, []);
@@ -877,15 +991,31 @@ class StaticApiController extends AbstractFOSRestController
         $items = $this->shippingRepository->findBy(['status'=>Shipping::FINISH]);
         $data = [];
         foreach ($items as $item) {
+            $lines_=[];
+            $lines=$item->getLineShippings();
+            foreach ($lines as $line){
+                $lines_[]=[
+                    'article'=>$line->getArticle()->getName(),
+                    'amount'=>$line->getAmount(),
+                    'quantity'=>$line->getQuantity(),
+                ];
+            }
             $data[] = [
                 'id' => $item->getId(),
-                'addressname' => $item->getAddress()->getName(),
                 'distance' => $item->getDistance(),
-                'addressid' => $item->getAddress()->getId(),
                 'placeid' => $item->getPlace()->getId(),
                 'placename' => $item->getPlace()->getName(),
                 'status' => $item->getStatus(),
                 'createdat' => $item->getDateCreated(),
+                'sourcelat' => $item->getLatStart(),
+                'sourcelng' => $item->getLngStart(),
+                'destinationlat' => $item->getLatEnd(),
+                'destinationlng' => $item->getLngEnd(),
+                'priceshipping' => $item->getPriceshipping(),
+                'total' => $item->getTotal(),
+                'customerid' => $item->getCustomer()->getId(),
+                'customername' => $item->getCustomer()->getCompte()->getName(),
+                'lines'=>$lines_
             ];
         }
         $view = $this->view($data, Response::HTTP_OK, []);
@@ -901,15 +1031,31 @@ class StaticApiController extends AbstractFOSRestController
         $items = $this->shippingRepository->findBy(['status'=>Shipping::STARTING]);
         $data = [];
         foreach ($items as $item) {
+            $lines_=[];
+            $lines=$item->getLineShippings();
+            foreach ($lines as $line){
+                $lines_[]=[
+                    'article'=>$line->getArticle()->getName(),
+                    'amount'=>$line->getAmount(),
+                    'quantity'=>$line->getQuantity(),
+                ];
+            }
             $data[] = [
                 'id' => $item->getId(),
-                'addressname' => $item->getAddress()->getName(),
                 'distance' => $item->getDistance(),
-                'addressid' => $item->getAddress()->getId(),
                 'placeid' => $item->getPlace()->getId(),
                 'placename' => $item->getPlace()->getName(),
                 'status' => $item->getStatus(),
                 'createdat' => $item->getDateCreated(),
+                'sourcelat' => $item->getLatStart(),
+                'sourcelng' => $item->getLngStart(),
+                'destinationlat' => $item->getLatEnd(),
+                'destinationlng' => $item->getLngEnd(),
+                'priceshipping' => $item->getPriceshipping(),
+                'total' => $item->getTotal(),
+                'customerid' => $item->getCustomer()->getId(),
+                'customername' => $item->getCustomer()->getCompte()->getName(),
+                'lines'=>$lines_
             ];
         }
         $view = $this->view($data, Response::HTTP_OK, []);

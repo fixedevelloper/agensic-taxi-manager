@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ShippingRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ShippingRepository::class)]
@@ -20,6 +22,8 @@ class Shipping
     use DateTimeTrait;
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $name = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $address = null;
     #[ORM\ManyToOne(inversedBy: 'shippings')]
     private ?Place $place = null;
 
@@ -28,9 +32,6 @@ class Shipping
 
     #[ORM\Column]
     private ?int $distance = 0;
-
-    #[ORM\ManyToOne]
-    private ?Article $article = null;
 
     #[ORM\Column(nullable: true)]
     private ?float $total = null;
@@ -55,6 +56,14 @@ class Shipping
 
     #[ORM\ManyToOne(inversedBy: 'shippings')]
     private ?Customer $customer = null;
+
+    #[ORM\OneToMany(mappedBy: 'shipping', targetEntity: LineShipping::class)]
+    private Collection $lineShippings;
+
+    public function __construct()
+    {
+        $this->lineShippings = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -114,17 +123,6 @@ class Shipping
         return $this;
     }
 
-    public function getArticle(): ?Article
-    {
-        return $this->article;
-    }
-
-    public function setArticle(?Article $article): self
-    {
-        $this->article = $article;
-
-        return $this;
-    }
 
     public function getTotal(): ?float
     {
@@ -221,4 +219,51 @@ class Shipping
 
         return $this;
     }
+
+    /**
+     * @return Collection<int, LineShipping>
+     */
+    public function getLineShippings(): Collection
+    {
+        return $this->lineShippings;
+    }
+
+    public function addLineShipping(LineShipping $lineShipping): self
+    {
+        if (!$this->lineShippings->contains($lineShipping)) {
+            $this->lineShippings->add($lineShipping);
+            $lineShipping->setShipping($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLineShipping(LineShipping $lineShipping): self
+    {
+        if ($this->lineShippings->removeElement($lineShipping)) {
+            // set the owning side to null (unless already changed)
+            if ($lineShipping->getShipping() === $this) {
+                $lineShipping->setShipping(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getAddress(): ?string
+    {
+        return $this->address;
+    }
+
+    /**
+     * @param string|null $address
+     */
+    public function setAddress(?string $address): void
+    {
+        $this->address = $address;
+    }
+
 }
