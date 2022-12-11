@@ -162,6 +162,7 @@ class StaticApiController extends AbstractFOSRestController
             $compte=$item->getCompte();
         } else {
             $item = new Driver();
+            $item->setIsdriver(true);
             $this->doctrine->persist($item);
             $compte=new User();
             $compte->setEmail($data['email']);
@@ -370,6 +371,7 @@ class StaticApiController extends AbstractFOSRestController
             $item = $this->shippingRepository->find($data['id']);
         } else {
             $item = new Shipping();
+            $item->setDateCreated(new \DateTimeImmutable('now',new \DateTimeZone('Africa/Brazzaville')));
             $place=$this->placeRepository->find($data['place']);
             $customer=$this->customerRepository->find($data['customer']);
             $item->setPlace($place);
@@ -887,13 +889,15 @@ class StaticApiController extends AbstractFOSRestController
                 'distance' => $item->getDistance(),
                 'placeid' => $item->getPlace()->getId(),
                 'placename' => $item->getPlace()->getName(),
+                'driver' => $item->getDriver()->getCompte()->getName(),
                 'status' => $item->getStatus(),
-                'createdat' => $item->getDateCreated(),
+                'createdat' => $item->getDateCreated()->format("Y-m-d h:m"),
                 'sourcelat' => $item->getLatStart(),
                 'sourcelng' => $item->getLngStart(),
                 'destinationlat' => $item->getLatEnd(),
                 'destinationlng' => $item->getLngEnd(),
                 'priceshipping' => $item->getPriceshipping(),
+                'address' => $item->getAddress(),
                 'total' => $item->getTotal(),
                 'customerid' => $item->getCustomer()->getId(),
                 'customername' => $item->getCustomer()->getCompte()->getName(),
@@ -926,13 +930,14 @@ class StaticApiController extends AbstractFOSRestController
                 'placeid' => $item->getPlace()->getId(),
                 'placename' => $item->getPlace()->getName(),
                 'status' => $item->getStatus(),
-                'createdat' => $item->getDateCreated(),
+                'createdat' => $item->getDateCreated()->format("Y-m-d h:m"),
                 'sourcelat' => $item->getLatStart(),
                 'sourcelng' => $item->getLngStart(),
                 'destinationlat' => $item->getLatEnd(),
                 'destinationlng' => $item->getLngEnd(),
                 'priceshipping' => $item->getPriceshipping(),
                 'total' => $item->getTotal(),
+                'address' => $item->getAddress(),
                 'customerid' => $item->getCustomer()->getId(),
                 'customername' => $item->getCustomer()->getCompte()->getName(),
                 'lines'=>$lines_
@@ -966,13 +971,14 @@ class StaticApiController extends AbstractFOSRestController
                 'placeid' => $item->getPlace()->getId(),
                 'placename' => $item->getPlace()->getName(),
                 'status' => $item->getStatus(),
-                'createdat' => $item->getDateCreated(),
+                'createdat' => $item->getDateCreated()->format("Y-m-d h:m"),
                 'sourcelat' => $item->getLatStart(),
                 'sourcelng' => $item->getLngStart(),
                 'destinationlat' => $item->getLatEnd(),
                 'destinationlng' => $item->getLngEnd(),
                 'priceshipping' => $item->getPriceshipping(),
                 'total' => $item->getTotal(),
+                'address' => $item->getAddress(),
                 'customerid' => $item->getCustomer()->getId(),
                 'customername' => $item->getCustomer()->getCompte()->getName(),
                 'lines'=>$lines_
@@ -988,7 +994,7 @@ class StaticApiController extends AbstractFOSRestController
      */
     public function shippingfinishList(Request $request)
     {
-        $items = $this->shippingRepository->findBy(['status'=>Shipping::FINISH]);
+        $items = $this->shippingRepository->findBy(['status'=>Shipping::DELIVERED]);
         $data = [];
         foreach ($items as $item) {
             $lines_=[];
@@ -1006,13 +1012,14 @@ class StaticApiController extends AbstractFOSRestController
                 'placeid' => $item->getPlace()->getId(),
                 'placename' => $item->getPlace()->getName(),
                 'status' => $item->getStatus(),
-                'createdat' => $item->getDateCreated(),
+                'createdat' => $item->getDateCreated()->format("Y-m-d h:m"),
                 'sourcelat' => $item->getLatStart(),
                 'sourcelng' => $item->getLngStart(),
                 'destinationlat' => $item->getLatEnd(),
                 'destinationlng' => $item->getLngEnd(),
                 'priceshipping' => $item->getPriceshipping(),
                 'total' => $item->getTotal(),
+                'address' => $item->getAddress(),
                 'customerid' => $item->getCustomer()->getId(),
                 'customername' => $item->getCustomer()->getCompte()->getName(),
                 'lines'=>$lines_
@@ -1028,7 +1035,7 @@ class StaticApiController extends AbstractFOSRestController
      */
     public function shippingstartList(Request $request)
     {
-        $items = $this->shippingRepository->findBy(['status'=>Shipping::STARTING]);
+        $items = $this->shippingRepository->findBy(['status'=>Shipping::PENDING]);
         $data = [];
         foreach ($items as $item) {
             $lines_=[];
@@ -1046,13 +1053,14 @@ class StaticApiController extends AbstractFOSRestController
                 'placeid' => $item->getPlace()->getId(),
                 'placename' => $item->getPlace()->getName(),
                 'status' => $item->getStatus(),
-                'createdat' => $item->getDateCreated(),
+                'createdat' => $item->getDateCreated()->format("Y-m-d h:m"),
                 'sourcelat' => $item->getLatStart(),
                 'sourcelng' => $item->getLngStart(),
                 'destinationlat' => $item->getLatEnd(),
                 'destinationlng' => $item->getLngEnd(),
                 'priceshipping' => $item->getPriceshipping(),
                 'total' => $item->getTotal(),
+                'address' => $item->getAddress(),
                 'customerid' => $item->getCustomer()->getId(),
                 'customername' => $item->getCustomer()->getCompte()->getName(),
                 'lines'=>$lines_

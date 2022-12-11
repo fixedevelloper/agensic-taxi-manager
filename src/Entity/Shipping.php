@@ -10,11 +10,11 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: ShippingRepository::class)]
 class Shipping
 {
-    const PENDING="PENDING";
-    const ACCEPTED="ACCEPTED";
+    const PENDING="PLACED";
+    const PREPARING="PREPARING";
     const REJECT="REJECT";
-    const STARTING="STARTING";
-    const FINISH="FINISH";
+    const ONTHEWAY="ONTHEWAY";
+    const DELIVERED="DELIVERED";
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -59,6 +59,9 @@ class Shipping
 
     #[ORM\OneToMany(mappedBy: 'shipping', targetEntity: LineShipping::class)]
     private Collection $lineShippings;
+
+    #[ORM\ManyToOne]
+    private ?Driver $driver = null;
 
     public function __construct()
     {
@@ -264,6 +267,18 @@ class Shipping
     public function setAddress(?string $address): void
     {
         $this->address = $address;
+    }
+
+    public function getDriver(): ?Driver
+    {
+        return $this->driver;
+    }
+
+    public function setDriver(?Driver $driver): self
+    {
+        $this->driver = $driver;
+
+        return $this;
     }
 
 }

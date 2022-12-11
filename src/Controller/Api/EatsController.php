@@ -174,7 +174,6 @@ class EatsController extends AbstractFOSRestController
         $data = $res['data'];
 
         if (is_null($data['id'])) {
-            $this->logger->info("iciA0");
             $category = $this->categoryRepository->find($data['category']);
             $article = new Article();
             $article->setCategory($category);
@@ -184,6 +183,7 @@ class EatsController extends AbstractFOSRestController
             $article = $this->articleRepository->find($data['id']);
         }
         $article->setName($data['name']);
+        $article->setType($data['type']);
         $article->setDescription($data['description']);
         $article->setPrice($data['price']);
 

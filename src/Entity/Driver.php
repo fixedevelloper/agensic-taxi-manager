@@ -19,6 +19,8 @@ class Driver
 
     #[ORM\Column]
     private ?bool $status = null;
+    #[ORM\Column]
+    private ?bool $isdriver = true;
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     private ?User $compte = null;
     #[ORM\Column(length: 255, nullable: true)]
@@ -61,6 +63,22 @@ class Driver
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function getIsdriver(): ?bool
+    {
+        return $this->isdriver;
+    }
+
+    /**
+     * @param bool|null $isdriver
+     */
+    public function setIsdriver(?bool $isdriver): void
+    {
+        $this->isdriver = $isdriver;
     }
 
     /**

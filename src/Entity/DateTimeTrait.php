@@ -10,9 +10,9 @@ use Exception;
 trait DateTimeTrait
 {
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private $date_created;
+    private \DateTimeImmutable $date_created;
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private $date_modified;
+    private \DateTimeImmutable $date_modified;
 
     /**
      * DateTimeTrait constructor.

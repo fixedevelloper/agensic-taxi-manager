@@ -5,6 +5,7 @@ namespace App\Controller\Api;
 
 
 use App\Entity\Ride;
+use App\Entity\Shipping;
 use App\Repository\AddressShippingRepository;
 use App\Repository\AffectationRideRepository;
 use App\Repository\CarRepository;
@@ -105,6 +106,32 @@ class ActionApiController extends AbstractFOSRestController
         }
         if ($action=="FINISH"){
             $ride->setStatus(Ride::FINISH);
+        }
+        $this->doctrine->flush();
+        $view = $this->view([], Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+    /**
+     * @Rest\Post("/v1/shippings/actions", name="api_shipping_action")
+     * @param Request $request
+     * @return Response
+     */
+    public function shippingAction(Request $request)
+    {
+        $res = json_decode($request->getContent(), true);
+        $data = $res['data'];
+        $shipping=$this->shippingRepository->find($data['ride']);
+        $action=$data['action'];
+        if ($action=="VALIDATE_DRIVER"){
+            $driver=$this->driverRepository->find($data['driver']);
+          $shipping->setDriver($driver);
+            $shipping->setStatus(Shipping::ONTHEWAY);
+        }
+        if ($action=="PREPARING"){
+            $shipping->setStatus(Shipping::PREPARING);
+        }
+        if ($action=="FINISH"){
+            $shipping->setStatus(Shipping::DELIVERED);
         }
         $this->doctrine->flush();
         $view = $this->view([], Response::HTTP_OK, []);
