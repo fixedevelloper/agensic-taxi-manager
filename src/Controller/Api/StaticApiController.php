@@ -891,7 +891,7 @@ class StaticApiController extends AbstractFOSRestController
                 'placename' => $item->getPlace()->getName(),
                 'driver' => $item->getDriver()->getCompte()->getName(),
                 'status' => $item->getStatus(),
-                'createdat' => $item->getDateCreated()->format("Y-m-d h:m"),
+                'createdat' => $item->getDateCreated(),
                 'sourcelat' => $item->getLatStart(),
                 'sourcelng' => $item->getLngStart(),
                 'destinationlat' => $item->getLatEnd(),
