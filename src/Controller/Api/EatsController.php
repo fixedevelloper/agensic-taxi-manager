@@ -307,7 +307,7 @@ class EatsController extends AbstractFOSRestController
     }
 
  /**
-     * @Rest\Get("/v1/articles/search", name="api_search_articles")
+     * @Rest\Get("/v1/articles/list/search", name="api_search_articles")
      * @return Response
      */
     public function searchArticle(Request $request)
