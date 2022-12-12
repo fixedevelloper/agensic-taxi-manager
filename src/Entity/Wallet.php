@@ -15,7 +15,8 @@ class Wallet
     use DateTimeTrait;
     #[ORM\Column]
     private ?float $amount = null;
-
+    #[ORM\Column]
+    private ?float $total = null;
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     private ?User $beneficiare = null;
 
@@ -37,6 +38,22 @@ class Wallet
         $this->amount = $amount;
 
         return $this;
+    }
+
+    /**
+     * @return float|null
+     */
+    public function getTotal(): ?float
+    {
+        return $this->total;
+    }
+
+    /**
+     * @param float|null $total
+     */
+    public function setTotal(?float $total): void
+    {
+        $this->total = $total;
     }
 
     public function getBeneficiare(): ?User

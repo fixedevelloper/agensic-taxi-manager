@@ -9,8 +9,8 @@ use Exception;
 
 trait DateTimeTrait
 {
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private \DateTimeImmutable $date_created;
+    #[ORM\Column(nullable: true)]
+    private \DateTime $date_created;
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private \DateTimeImmutable $date_modified;
 
@@ -20,7 +20,7 @@ trait DateTimeTrait
      */
     public function __construct()
     {
-        $this->date_created=new \DateTimeImmutable('now',new \DateTimeZone('Africa/Brazzaville'));
+        $this->date_created=new \DateTime('now',new \DateTimeZone('Africa/Brazzaville'));
         $this->date_modified=new \DateTimeImmutable('now',new \DateTimeZone('Africa/Brazzaville'));
     }
 
