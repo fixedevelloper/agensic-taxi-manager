@@ -825,6 +825,7 @@ class StaticApiController extends AbstractFOSRestController
         $items = $this->placeRepository->findAll();
         $data = [];
         foreach ($items as $item) {
+        $image = $item->getImage();
             $data[] = [
                 'id' => $item->getId(),
                 'name' => $item->getName(),
@@ -834,6 +835,7 @@ class StaticApiController extends AbstractFOSRestController
                 'bp' => $item->getBp(),
                 'latitude' => $item->getLatitude(),
                 'longitude' => $item->getLongitude(),
+                'image' => is_null($image) ? "" : $this->getParameter('domaininit') . $image->getSrc(),
             ];
         }
         $view = $this->view($data, Response::HTTP_OK, []);
