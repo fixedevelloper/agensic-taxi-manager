@@ -306,6 +306,35 @@ class EatsController extends AbstractFOSRestController
         return $this->handleView($view);
     }
 
+ /**
+     * @Rest\Get("/v1/articles/search", name="api_search_articles")
+     * @return Response
+     */
+    public function searchArticle(Request $request)
+    {
+        $this->logger->info($request->get('q'));
+    
+            $this->logger->info("Je suis iciM2");
+            $articles = $this->articleRepository->searchArticle($request->get('q'));
+     
+        $values = [];
+        foreach ($articles as $item) {
+       $image = $item->getImage();
+            $values[] = [
+                'id' => $item->getId(),
+                'name' => $item->getName(),
+                'description' => $item->getDescription(),
+                'price' => $item->getPrice(),
+                'category' => $item->getCategory()->getId(),
+                'category_name' => $item->getCategory()->getName(),
+                'status' => $item->getStatus(),
+                'imageid'=>$image->getId(),
+                'image' => is_null($image) ? "" : $this->getParameter('domaininit') . $image->getSrc(),
+            ];
+        }
+        $view = $this->view($values, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
     /**
      * @Rest\Get("/v1/categories/{place}", name="api_category_list")
      * @param Request $request
