@@ -891,7 +891,7 @@ class StaticApiController extends AbstractFOSRestController
                 'distance' => $item->getDistance(),
                 'placeid' => $item->getPlace()->getId(),
                 'placename' => $item->getPlace()->getName(),
-                'driver' => $item->getDriver()->getCompte()->getName(),
+                'driver' =>is_null($item->getDriver())?"": $item->getDriver()->getCompte()->getName(),
                 'status' => $item->getStatus(),
                 'createdat' => $item->getDateCreated()->format("Y-m-d h:m"),
                 'sourcelat' => $item->getLatStart(),
@@ -932,6 +932,7 @@ class StaticApiController extends AbstractFOSRestController
                 'placeid' => $item->getPlace()->getId(),
                 'placename' => $item->getPlace()->getName(),
                 'status' => $item->getStatus(),
+                'driver' =>is_null($item->getDriver())?"": $item->getDriver()->getCompte()->getName(),
                 'createdat' => $item->getDateCreated()->format("Y-m-d h:m"),
                 'sourcelat' => $item->getLatStart(),
                 'sourcelng' => $item->getLngStart(),
@@ -973,6 +974,51 @@ class StaticApiController extends AbstractFOSRestController
                 'placeid' => $item->getPlace()->getId(),
                 'placename' => $item->getPlace()->getName(),
                 'status' => $item->getStatus(),
+                'driver' =>is_null($item->getDriver())?"": $item->getDriver()->getCompte()->getName(),
+                'createdat' => $item->getDateCreated()->format("Y-m-d h:m"),
+                'sourcelat' => $item->getLatStart(),
+                'sourcelng' => $item->getLngStart(),
+                'destinationlat' => $item->getLatEnd(),
+                'destinationlng' => $item->getLngEnd(),
+                'priceshipping' => $item->getPriceshipping(),
+                'total' => $item->getTotal(),
+                'address' => $item->getAddress(),
+                'customerid' => $item->getCustomer()->getId(),
+                'customername' => $item->getCustomer()->getCompte()->getName(),
+                'lines'=>$lines_
+            ];
+        }
+        $view = $this->view($data, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+
+    /**
+     * @Rest\Get("/v1/shippings/driver/{driver}", name="api_shippings_driver")
+     * @param Request $request
+     * @param Driver $driver
+     * @return Response
+     */
+    public function shippingByDriver(Request $request,Driver $driver)
+    {
+        $items = $this->shippingRepository->findBy(['driver'=>$driver]);
+        $data = [];
+        foreach ($items as $item) {
+            $lines_=[];
+            $lines=$item->getLineShippings();
+            foreach ($lines as $line){
+                $lines_[]=[
+                    'article'=>$line->getArticle()->getName(),
+                    'amount'=>$line->getAmount(),
+                    'quantity'=>$line->getQuantity(),
+                ];
+            }
+            $data[] = [
+                'id' => $item->getId(),
+                'distance' => $item->getDistance(),
+                'placeid' => $item->getPlace()->getId(),
+                'placename' => $item->getPlace()->getName(),
+                'status' => $item->getStatus(),
+                'driver' =>is_null($item->getDriver())?"": $item->getDriver()->getCompte()->getName(),
                 'createdat' => $item->getDateCreated()->format("Y-m-d h:m"),
                 'sourcelat' => $item->getLatStart(),
                 'sourcelng' => $item->getLngStart(),
@@ -1014,6 +1060,7 @@ class StaticApiController extends AbstractFOSRestController
                 'placeid' => $item->getPlace()->getId(),
                 'placename' => $item->getPlace()->getName(),
                 'status' => $item->getStatus(),
+                'driver' =>is_null($item->getDriver())?"": $item->getDriver()->getCompte()->getName(),
                 'createdat' => $item->getDateCreated()->format("Y-m-d h:m"),
                 'sourcelat' => $item->getLatStart(),
                 'sourcelng' => $item->getLngStart(),
@@ -1055,6 +1102,7 @@ class StaticApiController extends AbstractFOSRestController
                 'placeid' => $item->getPlace()->getId(),
                 'placename' => $item->getPlace()->getName(),
                 'status' => $item->getStatus(),
+                'driver' =>is_null($item->getDriver())?"": $item->getDriver()->getCompte()->getName(),
                 'createdat' => $item->getDateCreated()->format("Y-m-d h:m"),
                 'sourcelat' => $item->getLatStart(),
                 'sourcelng' => $item->getLngStart(),

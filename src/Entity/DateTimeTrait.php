@@ -11,8 +11,8 @@ trait DateTimeTrait
 {
     #[ORM\Column(nullable: true)]
     private \DateTime $date_created;
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private \DateTimeImmutable $date_modified;
+    #[ORM\Column(nullable: true)]
+    private \DateTime $date_modified;
 
     /**
      * DateTimeTrait constructor.
@@ -21,7 +21,7 @@ trait DateTimeTrait
     public function __construct()
     {
         $this->date_created=new \DateTime('now',new \DateTimeZone('Africa/Brazzaville'));
-        $this->date_modified=new \DateTimeImmutable('now',new \DateTimeZone('Africa/Brazzaville'));
+        $this->date_modified=new \DateTime('now',new \DateTimeZone('Africa/Brazzaville'));
     }
 
     /**
