@@ -371,7 +371,7 @@ class StaticApiController extends AbstractFOSRestController
             $item = $this->shippingRepository->find($data['id']);
         } else {
             $item = new Shipping();
-            //$item->setDateCreated(new \DateTimeImmutable('now',new \DateTimeZone('Africa/Brazzaville')));
+            $item->setDateCreated(new \DateTime('now',new \DateTimeZone('Africa/Brazzaville')));
             $place=$this->placeRepository->find($data['place']);
             $customer=$this->customerRepository->find($data['customer']);
             $item->setPlace($place);
