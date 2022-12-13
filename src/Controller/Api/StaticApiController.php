@@ -993,7 +993,7 @@ class StaticApiController extends AbstractFOSRestController
     }
 
     /**
-     * @Rest\Get("/v1/shippings/driver/{driver}", name="api_shippings_driver")
+     * @Rest\Get("/v1/shippings/driver/{driver}/list", name="api_shippings_driver")
      * @param Request $request
      * @param Driver $driver
      * @return Response
