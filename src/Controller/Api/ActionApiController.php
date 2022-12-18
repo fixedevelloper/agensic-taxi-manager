@@ -150,7 +150,7 @@ class ActionApiController extends AbstractFOSRestController
 
     }
     /**
-     * @Rest\Post("/v1/rides/actions", name="api_ride_action")
+     * @Rest\Post("/v1/rides/prices", name="api_ride_price_action")
      * @param Request $request
      * @return Response
      */
