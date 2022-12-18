@@ -75,12 +75,12 @@ class InstallCommand extends Command
 
     }
     function createConfiguration(){
-        $configuration=new Configuration();
+       /* $configuration=new Configuration();
         $configuration->setCurrency('USD');
         $configuration->setSymbole('$');
         $configuration->setFixedcommission(3);
         $configuration->setPercentcommision(3);
         $this->doctrine->getManager()->persist($configuration);
-        $this->doctrine->getManager()->flush();
+        $this->doctrine->getManager()->flush();*/
     }
 }

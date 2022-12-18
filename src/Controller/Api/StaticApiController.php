@@ -832,6 +832,7 @@ class StaticApiController extends AbstractFOSRestController
                 'phone' => $item->getPhone(),
                 'address' => $item->getAddress(),
                 'propretaire' => $item->getPropretaire()->getId(),
+                'propretaire_name' => $item->getPropretaire()->getCompte()->getName(),
                 'bp' => $item->getBp(),
                 'latitude' => $item->getLatitude(),
                 'longitude' => $item->getLongitude(),
@@ -957,6 +958,48 @@ class StaticApiController extends AbstractFOSRestController
     public function shippingByCustomer(Request $request,Customer $customer)
     {
         $items = $this->shippingRepository->findBy(['customer'=>$customer]);
+        $data = [];
+        foreach ($items as $item) {
+            $lines_=[];
+            $lines=$item->getLineShippings();
+            foreach ($lines as $line){
+                $lines_[]=[
+                    'article'=>$line->getArticle()->getName(),
+                    'amount'=>$line->getAmount(),
+                    'quantity'=>$line->getQuantity(),
+                ];
+            }
+            $data[] = [
+                'id' => $item->getId(),
+                'distance' => $item->getDistance(),
+                'placeid' => $item->getPlace()->getId(),
+                'placename' => $item->getPlace()->getName(),
+                'status' => $item->getStatus(),
+                'driver' =>is_null($item->getDriver())?"": $item->getDriver()->getCompte()->getName(),
+                'createdat' => $item->getDateCreated()->format("Y-m-d h:m"),
+                'sourcelat' => $item->getLatStart(),
+                'sourcelng' => $item->getLngStart(),
+                'destinationlat' => $item->getLatEnd(),
+                'destinationlng' => $item->getLngEnd(),
+                'priceshipping' => $item->getPriceshipping(),
+                'total' => $item->getTotal(),
+                'address' => $item->getAddress(),
+                'customerid' => $item->getCustomer()->getId(),
+                'customername' => $item->getCustomer()->getCompte()->getName(),
+                'lines'=>$lines_
+            ];
+        }
+        $view = $this->view($data, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+    /**
+     * @Rest\Get("/v1/shippings/place/{place}", name="api_shippings_place")
+     * @param Request $request
+     * @return Response
+     */
+    public function shippingByPlace(Request $request,Place $place)
+    {
+        $items = $this->shippingRepository->findBy(['place'=>$place]);
         $data = [];
         foreach ($items as $item) {
             $lines_=[];

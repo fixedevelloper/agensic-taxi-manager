@@ -19,6 +19,11 @@ parameters:
     domaininit: '%env(resolve:BASE_DOMAINIIT)%'
     GPS_URL: '%env(resolve:GPS_URL)%'
     GPS_API: '%env(resolve:GPS_API)%'
+    MERCHANT_USERNAME: '%env(resolve:MERCHANT_USERNAME)%'
+    MERCHANT_PASSWORD: '%env(resolve:MERCHANT_PASSWORD)%'
+    MERCHAND_ID: '%env(resolve:MERCHAND_ID)%'
+    MERCHAND_ID_PASSWORD: '%env(resolve:MERCHAND_ID_PASSWORD)%'
+    MAXI_URL: '%env(resolve:MAXI_URL)%'
 
 services:
     # default configuration for services in *this* file
