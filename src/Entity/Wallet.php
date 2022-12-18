@@ -16,7 +16,7 @@ class Wallet
     #[ORM\Column]
     private ?float $amount = null;
     #[ORM\Column]
-    private ?float $total = null;
+    private ?float $total = 0.0;
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     private ?User $beneficiare = null;
 
