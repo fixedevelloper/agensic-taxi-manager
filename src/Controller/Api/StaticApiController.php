@@ -289,7 +289,7 @@ class StaticApiController extends AbstractFOSRestController
         $item->setEndto($data['endto']);
         $item->setLongitudestart($data['longitude_start']);
         $item->setLatitudestart($data['latitude_start']);
-        $item->setLatitudestop($data['latitude_start']);
+        $item->setLatitudestop($data['latitude_stop']);
         $item->setLongitudestop($data['longitude_stop']);
         $item->setDistance($data['distance']);
         $item->setPickupend(new \DateTime($data['pickupend'],new \DateTimeZone('Africa/Brazzaville')));
