@@ -550,7 +550,7 @@ class StaticApiController extends AbstractFOSRestController
         $item=$ride;
         $data = [
             'id' => $item->getId(),
-            'driverid' => is_null($item->getCar())?null:$item->getDriver()->getId(),
+            'driverid' => is_null($item->getDriver())?null:$item->getDriver()->getId(),
             'car_id' => is_null($item->getCar())?null:$item->getCar()->getId(),
             'customer_id' => $item->getCustomer()->getId(),
              'driver' => is_null($item->getDriver())?"":$item->getDriver()->getCompte()->getName(),
@@ -583,7 +583,7 @@ class StaticApiController extends AbstractFOSRestController
         foreach ($items as $item) {
             $data[] = [
                 'id' => $item->getId(),
-                'driverid' => is_null($item->getCar())?null:$item->getDriver()->getId(),
+                'driverid' => is_null($item->getDriver())?null:$item->getDriver()->getId(),
                 'car_id' => is_null($item->getCar())?null:$item->getCar()->getId(),
                 'customer_id' => $item->getCustomer()->getId(),
                 'driver' => is_null($item->getDriver())?"":$item->getDriver()->getCompte()->getName(),
@@ -617,7 +617,7 @@ class StaticApiController extends AbstractFOSRestController
         foreach ($items as $item) {
             $data[] = [
                 'id' => $item->getId(),
-                'driverid' => is_null($item->getCar())?null:$item->getDriver()->getId(),
+                'driverid' => is_null($item->getDriver())?null:$item->getDriver()->getId(),
                 'car_id' => is_null($item->getCar())?null:$item->getCar()->getId(),
                 'customer_id' => $item->getCustomer()->getId(),
                 'driver' => is_null($item->getDriver())?"":$item->getDriver()->getCompte()->getName(),
@@ -651,7 +651,7 @@ class StaticApiController extends AbstractFOSRestController
         foreach ($items as $item) {
             $data[] = [
                 'id' => $item->getId(),
-                'driverid' => is_null($item->getCar())?null:$item->getDriver()->getId(),
+                'driverid' => is_null($item->getDriver())?null:$item->getDriver()->getId(),
                 'car_id' => is_null($item->getCar())?null:$item->getCar()->getId(),
                 'customer_id' => $item->getCustomer()->getId(),
                 'driver' => is_null($item->getDriver())?"":$item->getDriver()->getCompte()->getName(),
@@ -687,7 +687,7 @@ class StaticApiController extends AbstractFOSRestController
         foreach ($items as $item) {
             $data[] = [
                 'id' => $item->getId(),
-                'driverid' => is_null($item->getCar())?null:$item->getDriver()->getId(),
+                'driverid' => is_null($item->getDriver())?null:$item->getDriver()->getId(),
                 'car_id' => is_null($item->getCar())?null:$item->getCar()->getId(),
                 'customer_id' => $item->getCustomer()->getId(),
                 'driver' => is_null($item->getDriver())?"":$item->getDriver()->getCompte()->getName(),
@@ -722,7 +722,7 @@ class StaticApiController extends AbstractFOSRestController
         foreach ($items as $item) {
             $data[] = [
                 'id' => $item->getId(),
-                'driverid' => is_null($item->getCar())?null:$item->getDriver()->getId(),
+                'driverid' => is_null($item->getDriver())?null:$item->getDriver()->getId(),
                 'car_id' => is_null($item->getCar())?null:$item->getCar()->getId(),
                 'customer_id' => $item->getCustomer()->getId(),
                 'driver' => is_null($item->getDriver())?"":$item->getDriver()->getCompte()->getName(),
