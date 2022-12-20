@@ -218,7 +218,7 @@ class ActionApiController extends AbstractFOSRestController
             "channels" => "ALL",
         ];
         $res= $this->cinetpayService->sendPrefund($formData);
-        // $this->em->flush();
+         $this->doctrine->flush();
         $view = $this->view($res, Response::HTTP_OK, []);
         return $this->handleView($view);
     }
@@ -264,6 +264,7 @@ class ActionApiController extends AbstractFOSRestController
             "CancelURL" => $return_url,
             "NotifyURL" => $notify_url,
             ];
+            $this->doctrine->flush();
         $view = $this->view($formdata, Response::HTTP_OK, []);
         return $this->handleView($view);
     }
