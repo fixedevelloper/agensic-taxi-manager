@@ -241,7 +241,7 @@ class ActionApiController extends AbstractFOSRestController
         for ($i = 1; $i <= 8; $i++) {
             $transaction_numero .= $allowed_characters[rand(0, count($allowed_characters) - 1)];
         }
-        $notify_url = $this->generateUrl('notifyurlajaxcinet', ['wallet' => $wallet->getId(),'amount'=>$amount]);
+        $notify_url = $this->generateUrl('notifyurlajaxcinet', ['wallet' => $wallet->getId()]);
         $return_url = $this->generateUrl('notifyurlajaxcinet', ['wallet' => $wallet->getId()]);
         $notify_url = $this->getParameter('domain') . $notify_url;
         $return_url = $this->getParameter('domain') . $return_url;
