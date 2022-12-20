@@ -60,4 +60,34 @@ class MaxicashService
         $body = $response->getBody();
         return json_decode($body, true);
     }
+    function postpaiementQueryString($data)
+    {
+        $postdata = [
+            "PayType" => "MaxiCash",
+            "MerchantID" => $this->params->get('MERCHANT_USERNAME'),
+            "MerchantPassword" => $this->params->get('MERCHANT_PASSWORD'),
+            "Amount" => "0".$data['amount'], //please note that the amounts must be sent in Cents
+            "Currency" => "maxiDollar", //values can be “maxiDollar” or “maxiRand”
+            "Telephone" => $data['phone'],
+            "Email" => $data['email'],
+            "Language" => "fr", //en or fr
+            "Reference" => $data['reference'],
+            "SuccessURL" => $data['successurl'],
+            "FailureURL" => $data['failureurl'],
+            "CancelURL" => $data['cancelurl'],
+            "NotifyURL" => $data['notifyurl'],
+            "Url"=> $this->params->get('MAXI_URL')
+        ];
+        $options = [
+            'headers' => [
+                'verify'  => false,
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+            ],
+            'body' => json_encode($postdata)
+
+        ];
+        $endpoint = $this->params->get('MAXI_URL')."?data=".json_encode($postdata);
+        return $postdata;
+    }
 }

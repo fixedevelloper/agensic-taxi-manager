@@ -24,6 +24,10 @@ parameters:
     MERCHAND_ID: '%env(resolve:MERCHAND_ID)%'
     MERCHAND_ID_PASSWORD: '%env(resolve:MERCHAND_ID_PASSWORD)%'
     MAXI_URL: '%env(resolve:MAXI_URL)%'
+    CINET_KEY: '%env(resolve:CINET_APIKEY)%'
+    CINET_PASSWORD: '%env(resolve:CINET_PASSWORD)%'
+    CINET_SITEID: '%env(resolve:CINET_SITEID)%'
+    domain: '%env(resolve:BASE_DOMAIN)%'
 
 services:
     # default configuration for services in *this* file
