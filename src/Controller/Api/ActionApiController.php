@@ -259,9 +259,9 @@ class ActionApiController extends AbstractFOSRestController
             "Email" => is_null($customer->getCompte()->getEmail())?"exemple@filifilo.com":$customer->getCompte()->getEmail(),
             "Language" => "fr", //en or fr
             "Reference" => $transaction_numero,
-            "SuccessURL" => $return_url,
-            "FailureURL" => $return_url,
-            "CancelURL" => $return_url,
+            "SuccessURL" => $notify_url,
+            "FailureURL" => $notify_url,
+            "CancelURL" => $notify_url,
             "NotifyURL" => $notify_url,
             ];
             $this->doctrine->flush();
