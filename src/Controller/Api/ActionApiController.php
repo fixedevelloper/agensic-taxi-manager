@@ -191,7 +191,7 @@ class ActionApiController extends AbstractFOSRestController
         $res = json_decode($request->getContent(), true);
         $data = $res['data'];
         $customer=$this->customerRepository->find($data['customer']);
-        $wallet = $this->walletRepository->findOneBy(['beneficiare'=>$customer]);
+        $wallet = $this->walletRepository->findOneBy(['beneficiare'=>$customer->getCompte()]);
         $amount=$data['amount'];
         $wallet->setAmount($amount);
         $transaction_numero = '';
@@ -233,7 +233,7 @@ class ActionApiController extends AbstractFOSRestController
         $res = json_decode($request->getContent(), true);
         $data = $res['data'];
         $customer=$this->customerRepository->find($data['customer']);
-        $wallet = $this->walletRepository->findOneBy(['beneficiare'=>$customer]);
+        $wallet = $this->walletRepository->findOneBy(['beneficiare'=>$customer->getCompte()]);
         $amount=$data['amount'];
         $wallet->setAmount($amount);
         $transaction_numero = '';
