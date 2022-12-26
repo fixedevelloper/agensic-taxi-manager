@@ -86,6 +86,7 @@ class GpsApiController extends AbstractFOSRestController
             $geoposition->setCompte($compte);
             $this->doctrine->persist($geoposition);
         }
+        $geoposition->setIsActive(true);
         $geoposition->setLongitude($data['longitude']);
         $geoposition->setLatitude($data['latitude']);
         $geoposition->setLastdate(new \DateTime('now',new \DateTimeZone('Africa/Brazzaville')));
