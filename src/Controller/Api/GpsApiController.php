@@ -5,11 +5,15 @@ namespace App\Controller\Api;
 
 
 use App\Entity\Car;
+use App\Entity\Customer;
 use App\Entity\Driver;
+use App\Entity\Geoposition;
 use App\Entity\GpsDevice;
 use App\Entity\Ride;
 use App\Repository\CarRepository;
+use App\Repository\CustomerRepository;
 use App\Repository\DriverRepository;
+use App\Repository\GeopositionRepository;
 use App\Repository\GpsDeviceRepository;
 use App\Service\GeoLocalisationService;
 use App\Service\GpsService;
@@ -37,6 +41,8 @@ class GpsApiController extends AbstractFOSRestController
     private IpLocationService $iplocationService;
     private DriverRepository $driverRepository;
     private GeoLocalisationService $geolocationService;
+    private  $geopositionRepository;
+    private $customerRepository;
 
     /**
      * GpsApiController constructor.
@@ -47,7 +53,7 @@ class GpsApiController extends AbstractFOSRestController
      * @param CarRepository $carRepository
      * @param GpsDeviceRepository $gpedeviceRepository
      */
-    public function __construct(IpLocationService $ipLocationService,LoggerInterface $logger,DriverRepository $driverRepository,
+    public function __construct(CustomerRepository $customerRepository,GeopositionRepository $geopositionRepository,IpLocationService $ipLocationService,LoggerInterface $logger,DriverRepository $driverRepository,
                                 GpsService $gpsService, EntityManagerInterface $doctrine,GeoLocalisationService $geoLocalisationService,
                                 CarRepository $carRepository, GpsDeviceRepository $gpedeviceRepository)
     {
@@ -59,8 +65,104 @@ class GpsApiController extends AbstractFOSRestController
         $this->iplocationService=$ipLocationService;
         $this->driverRepository=$driverRepository;
         $this->geolocationService=$geoLocalisationService;
+        $this->geopositionRepository=$geopositionRepository;
+        $this->customerRepository=$customerRepository;
     }
 
+    /**
+     * @Rest\Post("/v1/geopostions", name="api_geoposition_post")
+     * @param Request $request
+     * @return void
+     */
+    public function setLocalposition(Request $request)
+    {
+        $res = json_decode($request->getContent(), true);
+        $data = $res['data'];
+        $compte=$this->driverRepository->find($data['driver'])->getCompte();
+        $geoposition=$this->geopositionRepository->findOneBy(['compte'=>$compte]);
+        if (is_null($geoposition)){
+            $geoposition=new Geoposition();
+            $geoposition->setCompte($compte);
+            $this->doctrine->persist($geoposition);
+        }
+        $geoposition->setLongitude($data['longitude']);
+        $geoposition->setLatitude($data['latitude']);
+        $geoposition->setLastdate(new \DateTime('now',\DateTimeZone::AFRICA));
+        $this->doctrine->flush();
+    }
+    /**
+     * @Rest\Post("/v1/geopostions/customer", name="api_geoposition_post_flush")
+     * @param Request $request
+     * @return void
+     */
+    public function setLocalpositionAndFlush(Request $request)
+    {
+        $res = json_decode($request->getContent(), true);
+        $data = $res['data'];
+        $compte=$this->customerRepository->find($data['customer'])->getCompte();
+        $geoposition=$this->geopositionRepository->findOneBy(['compte'=>$compte]);
+        if (is_null($geoposition)){
+            $geoposition=new Geoposition();
+            $geoposition->setCompte($compte);
+            $this->doctrine->persist($geoposition);
+        }
+        $geoposition->setLongitude($data['longitude']);
+        $geoposition->setLatitude($data['latitude']);
+        $geoposition->setLastdate(new \DateTime('now',\DateTimeZone::AFRICA));
+        $this->doctrine->flush();
+    }
+
+    /**
+     * @Rest\Get("/v1/geopostions/driver/{id}", name="api_geopositiondriver")
+     * @param Request $request
+     * @param Driver $driver
+     * @return Response
+     */
+    public function getGeopositionDriver(Request $request,Driver $driver)
+    {
+        $geoposition=$this->geopositionRepository->findOneBy(['compte'=>$driver->getCompte()]);
+        if (is_null($geoposition)){
+            $responses=[
+              "code"=>400
+            ];
+        }else{
+            $responses=[
+                "code"=>200,
+                "latitude"=>$geoposition->getLatitude(),
+                "longitude"=>$geoposition->getLongitude(),
+                "lastupdate"=>$geoposition->getLastdate()->format("Y-m-d h:m:s"),
+            ];
+        }
+
+        $view = $this->view($responses, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+
+    /**
+     * @Rest\Get("/v1/geopostions/customer/{id}", name="api_geopositioncustomer")
+     * @param Request $request
+     * @param Customer $customer
+     * @return Response
+     */
+    public function getGeopositionCustomer(Request $request,Customer $customer)
+    {
+        $geoposition=$this->geopositionRepository->findOneBy(['compte'=>$customer->getCompte()]);
+        if (is_null($geoposition)){
+            $responses=[
+                "code"=>400
+            ];
+        }else{
+            $responses=[
+                "code"=>200,
+                "latitude"=>$geoposition->getLatitude(),
+                "longitude"=>$geoposition->getLongitude(),
+                "lastupdate"=>$geoposition->getLastdate()->format("Y-m-d h:m:s"),
+            ];
+        }
+
+        $view = $this->view($responses, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
     /**
      * @Rest\Post("/v1/gpsdevise", name="api_gpsdevise_post")
      * @param Request $request
