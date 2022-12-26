@@ -73,6 +73,7 @@ class GpsApiController extends AbstractFOSRestController
      * @Rest\Post("/v1/geopostions", name="api_geoposition_post")
      * @param Request $request
      * @return void
+     * @throws Exception
      */
     public function setLocalposition(Request $request)
     {
@@ -87,7 +88,7 @@ class GpsApiController extends AbstractFOSRestController
         }
         $geoposition->setLongitude($data['longitude']);
         $geoposition->setLatitude($data['latitude']);
-        $geoposition->setLastdate(new \DateTime('now',\DateTimeZone::AFRICA));
+        $geoposition->setLastdate(new \DateTime('now',new \DateTimeZone('Africa/Brazzaville')));
         $this->doctrine->flush();
     }
     /**
