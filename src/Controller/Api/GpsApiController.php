@@ -72,7 +72,7 @@ class GpsApiController extends AbstractFOSRestController
     /**
      * @Rest\Post("/v1/geopostions", name="api_geoposition_post")
      * @param Request $request
-     * @return void
+     * @return Response
      * @throws Exception
      */
     public function setLocalposition(Request $request)
@@ -91,11 +91,13 @@ class GpsApiController extends AbstractFOSRestController
         $geoposition->setLatitude($data['latitude']);
         $geoposition->setLastdate(new \DateTime('now',new \DateTimeZone('Africa/Brazzaville')));
         $this->doctrine->flush();
+        $view = $this->view($geoposition, Response::HTTP_OK, []);
+        return $this->handleView($view);
     }
     /**
      * @Rest\Post("/v1/geopostions/customer", name="api_geoposition_post_flush")
      * @param Request $request
-     * @return void
+     * @return Response
      */
     public function setLocalpositionAndFlush(Request $request)
     {
@@ -110,8 +112,11 @@ class GpsApiController extends AbstractFOSRestController
         }
         $geoposition->setLongitude($data['longitude']);
         $geoposition->setLatitude($data['latitude']);
-        $geoposition->setLastdate(new \DateTime('now',\DateTimeZone::AFRICA));
+        $geoposition->setLastdate(new \DateTime('now',new \DateTimeZone('Africa/Brazzaville')));
+        $geoposition->setIsActive(true);
         $this->doctrine->flush();
+        $view = $this->view($geoposition, Response::HTTP_OK, []);
+        return $this->handleView($view);
     }
 
     /**
