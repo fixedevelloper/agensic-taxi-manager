@@ -11,6 +11,7 @@ use App\Entity\Configuration;
 use App\Entity\Customer;
 use App\Entity\Driver;
 use App\Entity\LineShipping;
+use App\Entity\Notification;
 use App\Entity\Place;
 use App\Entity\Proprietaire;
 use App\Entity\Ride;
@@ -296,6 +297,9 @@ class StaticApiController extends AbstractFOSRestController
         $item->setPikupbegin(new \DateTime($data['pickupbegin'],new \DateTimeZone('Africa/Brazzaville')));
         $item->setStatus(Ride::PENDING);
         $this->doctrine->flush();
+        $tilte="Nouvelle course";
+        $message="Course allant de ".$item->getStartto()." au".$item->getEndto();
+        $this->sendNotificationAllDriver("",$message,$tilte,"");
         $view = $this->view([], Response::HTTP_OK, []);
         return $this->handleView($view);
     }
@@ -398,6 +402,7 @@ class StaticApiController extends AbstractFOSRestController
         $item->setLngStart($data['lngstart']);
         $item->setStatus(Shipping::PENDING);
         $this->doctrine->flush();
+
         $view = $this->view([], Response::HTTP_OK, []);
         return $this->handleView($view);
     }
@@ -1207,5 +1212,30 @@ class StaticApiController extends AbstractFOSRestController
             ];
         $view = $this->view($data, Response::HTTP_OK, []);
         return $this->handleView($view);
+    }
+    private function sendNotificationCustomer($customer,$message,$title,$status){
+        $notification=new Notification();
+        $notification->setUserid($customer);
+        $notification->setMessage($message);
+        $notification->setAllcustomer(false);
+        $notification->setAlldriver(false);
+        $notification->setTitle($title);
+        $notification->setSendDate(new \DateTime('now',new \DateTimeZone("Africa/Brazzaville")));
+        $notification->setIcon("");
+        $this->doctrine->persist($notification);
+        $this->doctrine->flush();
+    }
+    private function sendNotificationAllDriver($driver,$message,$title,$status){
+
+        $notification=new Notification();
+        $notification->setUserid(null);
+        $notification->setMessage($message);
+        $notification->setAllcustomer(false);
+        $notification->setAlldriver(true);
+        $notification->setTitle($title);
+        $notification->setSendDate(new \DateTime('now',new \DateTimeZone("Africa/Brazzaville")));
+        $notification->setIcon("");
+        $this->doctrine->persist($notification);
+        $this->doctrine->flush();
     }
 }

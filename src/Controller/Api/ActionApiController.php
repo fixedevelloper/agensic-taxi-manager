@@ -4,6 +4,8 @@
 namespace App\Controller\Api;
 
 
+use App\Entity\Driver;
+use App\Entity\Notification;
 use App\Entity\Ride;
 use App\Entity\Shipping;
 use App\Repository\AddressShippingRepository;
@@ -12,6 +14,7 @@ use App\Repository\CarRepository;
 use App\Repository\ConfigurationRepository;
 use App\Repository\CustomerRepository;
 use App\Repository\DriverRepository;
+use App\Repository\NotificationRepository;
 use App\Repository\PlaceRepository;
 use App\Repository\ProprietaireRepository;
 use App\Repository\RideRepository;
@@ -50,6 +53,7 @@ class ActionApiController extends AbstractFOSRestController
     private EntityManagerInterface $doctrine;
     private ShippingRepository $shippingRepository;
     private WalletRepository $walletRepository;
+    private NotificationRepository $notificationRepository;
     private $cinetpayService;
     private $maxicashService;
 
@@ -69,7 +73,8 @@ class ActionApiController extends AbstractFOSRestController
      * @param LoggerInterface $logger
      * @param UserPasswordHasherInterface $passwordEncoder
      */
-    public function __construct(ShippingRepository $shippingRepository,PlaceRepository $placeRepository,AddressShippingRepository $addressRepository,ConfigurationRepository $configurationRepository,EntityManagerInterface $entityManager,UserRepository $userRepository,AffectationRideRepository $affectationRideRepository,
+    public function __construct(ShippingRepository $shippingRepository,NotificationRepository $notificationRepository,
+                                PlaceRepository $placeRepository,AddressShippingRepository $addressRepository,ConfigurationRepository $configurationRepository,EntityManagerInterface $entityManager,UserRepository $userRepository,AffectationRideRepository $affectationRideRepository,
                                 ProprietaireRepository $propretaireRepository,CarRepository $carRepository,
                                 DriverRepository $driverRepository,RideRepository $rideRepository,CustomerRepository $customerRepository,
                                 LoggerInterface $logger,UserPasswordHasherInterface $passwordEncoder,MaxicashService $maxicashService,
@@ -89,6 +94,7 @@ class ActionApiController extends AbstractFOSRestController
         $this->placeRepository=$placeRepository;
         $this->shippingRepository=$shippingRepository;
         $this->walletRepository=$walletRepository;
+        $this->notificationRepository=$notificationRepository;
         $this->cinetpayService=$cinetPayService;
         $this->maxicashService=$maxicashService;
         $this->doctrine=$entityManager;
@@ -112,12 +118,24 @@ class ActionApiController extends AbstractFOSRestController
                 $ride->setCar($affectation->getCAr());
             }
             $ride->setStatus(Ride::CONFIRMED);
+            $message="Le chauffeur ".$driver->getCompte()->getName()." a accepter votre course";
+            $title="Prise de la course";
+            $this->sendNotificationCustomer($ride->getCustomer()->getId(),$message,$title,"");
+
         }
         if ($action=="STARTING_DRIVER"){
             $ride->setStatus(Ride::STARTING);
+            $message="Votre course a debute profitez du confort";
+            $title="Course debute";
+            $this->sendNotificationCustomer($ride->getCustomer()->getId(),$message,$title,"");
+
         }
         if ($action=="FINISH"){
             $ride->setStatus(Ride::FINISH);
+            $message="Votre course a terminee vous etes a destination. nous vous remercions";
+            $title="Course terminé";
+            $this->sendNotificationCustomer($ride->getCustomer()->getId(),$message,$title,"");
+
         }
         $this->doctrine->flush();
         $view = $this->view([], Response::HTTP_OK, []);
@@ -136,35 +154,69 @@ class ActionApiController extends AbstractFOSRestController
         $action=$data['action'];
         if ($action=="VALIDATE_DRIVER"){
             $driver=$this->driverRepository->find($data['driver']);
-          $shipping->setDriver($driver);
+            $shipping->setDriver($driver);
             $shipping->setStatus(Shipping::ONTHEWAY);
+            $message="Le chauffeur ".$driver->getCompte()->getName()." a accepter votre course";
+            $title="Prise de la course";
+            $this->sendNotificationCustomer($shipping->getCustomer()->getId(),$message,$title,"");
         }
         if ($action=="PREPARING"){
             $shipping->setStatus(Shipping::PREPARING);
+            $message="Votre commande ".$shipping->getId()." est encours de preparation";
+            $title="Commande en preparation";
+            $this->sendNotificationCustomer($shipping->getCustomer()->getId(),$message,$title,"");
+
         }
         if ($action=="FINISH"){
             $shipping->setStatus(Shipping::DELIVERED);
+            $message="Le chauffeur ".$driver->getCompte()->getName()." a accepter votre course";
+            $title="Prise de la course";
+            $this->sendNotificationCustomer($shipping->getCustomer()->getId(),$message,$title,"");
+
         }
         $this->doctrine->flush();
         $view = $this->view([], Response::HTTP_OK, []);
         return $this->handleView($view);
     }
-    private function sendNotificationDriver(Ride $ride){
-        $object="Prise course";
+    private function sendNotificationDriver($driver,$status,$message,$title){
+       /* $object="Prise course";
         $message="Vous avez une course de".$ride->getDistance()." Km  allant de ".$ride->getStartto(). " à ".$ride->getEndto();
+       */ $notification=new Notification();
+        $notification->setUserid($driver);
+        $notification->setMessage($message);
+        $notification->setAllcustomer(false);
+        $notification->setAlldriver(false);
+        $notification->setTitle($title);
+        $notification->setSendDate(new \DateTime('now',new \DateTimeZone("Africa/Brazzaville")));
+        $notification->setIcon("");
+        $this->doctrine->persist($notification);
+        $this->doctrine->flush();
     }
-    private function sendNotificationCustomer(Ride $ride){
-        $object="Prise course";
+    private function sendNotificationCustomer($customer,$message,$title,$status){
+  /*      $object="Prise course";
         $message="Tres cher ".$ride->getCustomer()->getCompte()->getName()."votre course allant de ".$ride->getStartto(). " à ".$ride->getEndto().
             " a ete enregistré avec success. votre chauffeur M.".$ride->getDriver()->getCompte()->getName()." est a 5 min du point de depart";
+       */
+        $notification=new Notification();
+        $notification->setUserid($customer);
+        $notification->setMessage($message);
+        $notification->setAllcustomer(false);
+        $notification->setAlldriver(false);
+        $notification->setTitle($title);
+        $notification->setSendDate(new \DateTime('now',new \DateTimeZone("Africa/Brazzaville")));
+        $notification->setIcon("");
+        $this->doctrine->persist($notification);
+        $this->doctrine->flush();
     }
     private function sendNotificationAdministration(){
 
     }
+
     /**
      * @Rest\Post("/v1/rides/prices", name="api_ride_price_action")
      * @param Request $request
      * @return Response
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function getPrice(Request $request)
     {
@@ -291,5 +343,23 @@ class ActionApiController extends AbstractFOSRestController
             $this->doctrine->flush();
 
         return new JsonResponse([], 200);
+    }
+
+    /**
+     * @Rest\Get("/v1/notifications/driver/{id}", name="api_notification_driver")
+     * @param Request $request
+     * @param Driver $driver
+     * @return Response
+     */
+    public function notificationDriver(Request $request,Driver $driver)
+    {
+        $notification=$this->notificationRepository->findOneByLastUser($driver->getId());
+        return new JsonResponse([
+            "message"=>$notification->getMessage(),
+            'title'=>$notification->getTitle(),
+            'icon'=>$notification->getIcon(),
+            'user'=>$driver->getId(),
+            'id'=>$notification->getId()
+        ], 200);
     }
 }
