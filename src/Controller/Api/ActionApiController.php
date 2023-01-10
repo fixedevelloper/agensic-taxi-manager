@@ -355,13 +355,15 @@ class ActionApiController extends AbstractFOSRestController
     public function notificationDriver(Request $request,Driver $driver)
     {
         $notification=$this->notificationRepository->findOneByLastUser($driver->getId());
-        return new JsonResponse([
+        $res=[
             "message"=>$notification->getMessage(),
             'title'=>$notification->getTitle(),
             'icon'=>$notification->getIcon(),
             'user'=>$driver->getId(),
             'id'=>$notification->getId()
-        ], 200);
+        ];
+        $view = $this->view($res, Response::HTTP_OK, []);
+        return $this->handleView($view);
     }
 
     /**
@@ -373,13 +375,16 @@ class ActionApiController extends AbstractFOSRestController
     public function notificationCustomer(Request $request,Customer $customer)
     {
         $notification=$this->notificationRepository->findOneByLastCustomer($customer->getId());
-        return new JsonResponse([
+
+        $res=[
             "message"=>$notification->getMessage(),
             'title'=>$notification->getTitle(),
             'icon'=>$notification->getIcon(),
             'user'=>$customer->getId(),
             'id'=>$notification->getId()
-        ], 200);
+        ];
+        $view = $this->view($res, Response::HTTP_OK, []);
+        return $this->handleView($view);
     }
 
     /**
