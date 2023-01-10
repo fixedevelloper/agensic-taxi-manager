@@ -372,7 +372,7 @@ class ActionApiController extends AbstractFOSRestController
      */
     public function notificationCustomer(Request $request,Customer $customer)
     {
-        $notification=$this->notificationRepository->findOneByLastUser($customer->getId());
+        $notification=$this->notificationRepository->findOneByLastCustomer($customer->getId());
         return new JsonResponse([
             "message"=>$notification->getMessage(),
             'title'=>$notification->getTitle(),

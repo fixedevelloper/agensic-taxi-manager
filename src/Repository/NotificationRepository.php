@@ -57,7 +57,19 @@ class NotificationRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('s')
             ->andWhere('s.userid := user')
-            ->orWhere('s.alldriver =1')
+            ->orWhere('s.alldriver = 1')
+            ->setParameter('user',$user)
+            ->setMaxResults(1)
+            ->orderBy('s.id', 'DESC')
+            ->getQuery()
+            ->getOneOrNullResult()
+            ;
+    }
+    public function findOneByLastCustomer($user):Notification
+    {
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.userid := user')
+            ->orWhere('s.alldriver = 1')
             ->setParameter('user',$user)
             ->setMaxResults(1)
             ->orderBy('s.id', 'DESC')
