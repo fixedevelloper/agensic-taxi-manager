@@ -32,7 +32,6 @@ class Notification
     #[ORM\Column(nullable: true)]
     private ?bool $allcustomer = false;
 
-
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $sendDate = null;
 

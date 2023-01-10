@@ -4,6 +4,7 @@
 namespace App\Controller\Api;
 
 
+use App\Entity\Customer;
 use App\Entity\Driver;
 use App\Entity\Notification;
 use App\Entity\Ride;
@@ -361,5 +362,35 @@ class ActionApiController extends AbstractFOSRestController
             'user'=>$driver->getId(),
             'id'=>$notification->getId()
         ], 200);
+    }
+
+    /**
+     * @Rest\Get("/v1/notifications/customer/{id}", name="api_notification_customer")
+     * @param Request $request
+     * @param Customer $customer
+     * @return Response
+     */
+    public function notificationCustomer(Request $request,Customer $customer)
+    {
+        $notification=$this->notificationRepository->findOneByLastUser($customer->getId());
+        return new JsonResponse([
+            "message"=>$notification->getMessage(),
+            'title'=>$notification->getTitle(),
+            'icon'=>$notification->getIcon(),
+            'user'=>$customer->getId(),
+            'id'=>$notification->getId()
+        ], 200);
+    }
+
+    /**
+     * @param Request $request
+     * @return void
+     * @Rest\Post ("/v1/notifications/response",name="notification_response")
+     */
+    public function responseNotification(Request $request)
+    {
+        $res = json_decode($request->getContent(), true);
+        $data = $res['data'];
+        $notification=$this->notificationRepository->find($data['id']);
     }
 }
