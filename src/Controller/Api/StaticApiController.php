@@ -918,9 +918,11 @@ class StaticApiController extends AbstractFOSRestController
         $view = $this->view($data, Response::HTTP_OK, []);
         return $this->handleView($view);
     }
+
     /**
      * @Rest\Get("/v1/shippings/{id}/one", name="api_shippings_one")
      * @param Request $request
+     * @param Shipping $shipping
      * @return Response
      */
     public function shippingOne(Request $request,Shipping $shipping)
@@ -943,7 +945,7 @@ class StaticApiController extends AbstractFOSRestController
                 'status' => $item->getStatus(),
                 'driver' =>is_null($item->getDriver())?"": $item->getDriver()->getCompte()->getName(),
                 'driverid' =>is_null($item->getDriver())? null: $item->getDriver()->getId(),
-                'createdat' => $item->getDateCreated()->format("Y-m-d h:m"),
+                'createdat' => $item->getDateCreated()->format("Y-m-d h:i"),
                 'sourcelat' => $item->getLatStart(),
                 'sourcelng' => $item->getLngStart(),
                 'destinationlat' => $item->getLatEnd(),

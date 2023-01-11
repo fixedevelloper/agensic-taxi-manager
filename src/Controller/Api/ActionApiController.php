@@ -170,6 +170,20 @@ class ActionApiController extends AbstractFOSRestController
             $this->sendNotificationCustomer($shipping->getCustomer()->getId(),$message,$title,"");
 
         }
+        if ($action=="REJECT"){
+            $shipping->setStatus(Shipping::REJECT);
+            $message="La livraison n° ".$shipping->getId()."  a éte annulée .";
+            $title="Livraison annulée";
+            $this->sendNotificationCustomer($shipping->getCustomer()->getId(),$message,$title,"");
+
+        }
+        if ($action=="PENDING"){
+            $shipping->setStatus(Shipping::PENDING);
+            $message="La livraison n° ".$shipping->getId()." a un status PLACED";
+            $title="Livraison En cours";
+            $this->sendNotificationCustomer($shipping->getCustomer()->getId(),$message,$title,"");
+
+        }
         if ($action=="FINISH"){
             $shipping->setStatus(Shipping::DELIVERED);
             $message="La livraison n° ".$shipping->getId()."  est terminée";
