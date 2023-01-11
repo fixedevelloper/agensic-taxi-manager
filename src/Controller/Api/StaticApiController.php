@@ -402,7 +402,9 @@ class StaticApiController extends AbstractFOSRestController
         $item->setLngStart($data['lngstart']);
         $item->setStatus(Shipping::PENDING);
         $this->doctrine->flush();
-
+        $tilte="Nouvelle Livraison";
+        $message="Livraison allant de ".$item->getPlace()->getName()." a".$item->getAddress();
+        $this->sendNotificationAllDriver("",$message,$tilte,"");
         $view = $this->view([], Response::HTTP_OK, []);
         return $this->handleView($view);
     }

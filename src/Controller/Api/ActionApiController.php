@@ -119,22 +119,22 @@ class ActionApiController extends AbstractFOSRestController
                 $ride->setCar($affectation->getCAr());
             }
             $ride->setStatus(Ride::CONFIRMED);
-            $message="Le chauffeur ".$driver->getCompte()->getName()." a accepter votre course";
+            $message="Le chauffeur ".$driver->getCompte()->getName()." a accepté votre course";
             $title="Prise de la course";
             $this->sendNotificationCustomer($ride->getCustomer()->getId(),$message,$title,"");
 
         }
         if ($action=="STARTING_DRIVER"){
             $ride->setStatus(Ride::STARTING);
-            $message="Votre course a debute profitez du confort";
-            $title="Course debute";
+            $message="Votre course a debute, profitez du confort";
+            $title="Course a debutée";
             $this->sendNotificationCustomer($ride->getCustomer()->getId(),$message,$title,"");
 
         }
         if ($action=="FINISH"){
             $ride->setStatus(Ride::FINISH);
-            $message="Votre course a terminee vous etes a destination. nous vous remercions";
-            $title="Course terminé";
+            $message="Votre course est terminée, vous etes a destination. Nous vous remercions";
+            $title="Course terminée";
             $this->sendNotificationCustomer($ride->getCustomer()->getId(),$message,$title,"");
 
         }
@@ -157,21 +157,23 @@ class ActionApiController extends AbstractFOSRestController
             $driver=$this->driverRepository->find($data['driver']);
             $shipping->setDriver($driver);
             $shipping->setStatus(Shipping::ONTHEWAY);
-            $message="Le chauffeur ".$driver->getCompte()->getName()." a accepter votre course";
+            $message="Le chauffeur ".$driver->getCompte()->getName()." a accepter votre livraison";
             $title="Prise de la course";
             $this->sendNotificationCustomer($shipping->getCustomer()->getId(),$message,$title,"");
         }
         if ($action=="PREPARING"){
             $shipping->setStatus(Shipping::PREPARING);
             $message="Votre commande ".$shipping->getId()." est encours de preparation";
+            $messageD="La commande ".$shipping->getId()." du client ".$shipping->getCustomer()->getCompte()->getName()." est encours de preparation";
             $title="Commande en preparation";
+            $this->sendNotificationDriver(null,$messageD,$title,"");
             $this->sendNotificationCustomer($shipping->getCustomer()->getId(),$message,$title,"");
 
         }
         if ($action=="FINISH"){
             $shipping->setStatus(Shipping::DELIVERED);
-            $message="Le chauffeur ".$driver->getCompte()->getName()." a accepter votre course";
-            $title="Prise de la course";
+            $message="La livraison n° ".$shipping->getId()."  est terminée";
+            $title="Livraison terminée";
             $this->sendNotificationCustomer($shipping->getCustomer()->getId(),$message,$title,"");
 
         }
@@ -180,13 +182,15 @@ class ActionApiController extends AbstractFOSRestController
         return $this->handleView($view);
     }
     private function sendNotificationDriver($driver,$status,$message,$title){
-       /* $object="Prise course";
-        $message="Vous avez une course de".$ride->getDistance()." Km  allant de ".$ride->getStartto(). " à ".$ride->getEndto();
-       */ $notification=new Notification();
+       $notification=new Notification();
+       if ($driver==null){
+           $notification->setAlldriver(true);
+       }else{
+           $notification->setAlldriver(false);
+       }
         $notification->setUserid($driver);
         $notification->setMessage($message);
         $notification->setAllcustomer(false);
-        $notification->setAlldriver(false);
         $notification->setTitle($title);
         $notification->setSendDate(new \DateTime('now',new \DateTimeZone("Africa/Brazzaville")));
         $notification->setIcon("");
@@ -194,14 +198,15 @@ class ActionApiController extends AbstractFOSRestController
         $this->doctrine->flush();
     }
     private function sendNotificationCustomer($customer,$message,$title,$status){
-  /*      $object="Prise course";
-        $message="Tres cher ".$ride->getCustomer()->getCompte()->getName()."votre course allant de ".$ride->getStartto(). " à ".$ride->getEndto().
-            " a ete enregistré avec success. votre chauffeur M.".$ride->getDriver()->getCompte()->getName()." est a 5 min du point de depart";
-       */
         $notification=new Notification();
+        if ($customer==null){
+            $notification->setAllcustomer(true);
+        }else{
+            $notification->setAllcustomer(false);
+        }
         $notification->setUserid($customer);
         $notification->setMessage($message);
-        $notification->setAllcustomer(false);
+
         $notification->setAlldriver(false);
         $notification->setTitle($title);
         $notification->setSendDate(new \DateTime('now',new \DateTimeZone("Africa/Brazzaville")));
