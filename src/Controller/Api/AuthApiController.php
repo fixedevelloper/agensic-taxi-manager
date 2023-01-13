@@ -9,6 +9,7 @@ use App\Entity\User;
 
 use App\Repository\CustomerRepository;
 use App\Repository\DriverRepository;
+use App\Repository\ProprietaireRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
@@ -29,9 +30,9 @@ class AuthApiController extends AbstractFOSRestController
     private $logger;
     private $userRepository;
     private $customerRepository;
-    private $driverRepository;
+    private DriverRepository $driverRepository;
     private $doctrine;
-
+    private ProprietaireRepository $proprietaireRepository;
     /**
      * @param EntityManagerInterface $entityManager
      * @param UserRepository $userRepository
@@ -40,7 +41,7 @@ class AuthApiController extends AbstractFOSRestController
      * @param LoggerInterface $logger
      * @param UserPasswordHasherInterface $passwordEncoder
      */
-    public function __construct(EntityManagerInterface $entityManager,
+    public function __construct(EntityManagerInterface $entityManager,ProprietaireRepository $proprietaireRepository,
                                 UserRepository $userRepository,DriverRepository $driverRepository,CustomerRepository $customerRepository,
                               LoggerInterface $logger,UserPasswordHasherInterface $passwordEncoder)
     {
@@ -49,6 +50,7 @@ class AuthApiController extends AbstractFOSRestController
         $this->userRepository=$userRepository;
         $this->customerRepository=$customerRepository;
         $this->driverRepository=$driverRepository;
+        $this->proprietaireRepository=$proprietaireRepository;
         $this->doctrine=$entityManager;
     }
 
@@ -80,6 +82,44 @@ class AuthApiController extends AbstractFOSRestController
         }
         $body=[
             'id'=>$driver->getId(),
+            'name'=>$user->getName(),
+            'username'=>$user->getEmail(),
+            'password'=>$user->getPhone(),
+            'email'=>$user->getEmail(),
+            'phone'=>$user->getPhone(),
+            'avatar'=>$user->getAvatar(),
+        ];
+        $view = $this->view($body, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+    /**
+     * @Rest\Post("/v1/api_login_propretaire", name="api_auth_propretaire")
+     * @param Request $request
+     * @return Response
+     */
+    public function authPropreataire(Request $request)
+    {
+        $res = json_decode($request->getContent(), true);
+        $data=$res['data'];
+        $email=$data['phone'];
+        $password=$data['password'];
+        $user=$this->userRepository->findOneBy(['phone'=>$email]);
+        if (null == $user) {
+            $view = $this->view([], Response::HTTP_FORBIDDEN, []);
+            return $this->handleView($view);
+        }
+        $isValid = $this->passwordEncoder->isPasswordValid($user, $password);
+        if (!$isValid) {
+            $view = $this->view([], Response::HTTP_FORBIDDEN, []);
+            return $this->handleView($view);
+        }
+        $propretaire=$this->proprietaireRepository->findOneBy(['compte'=>$user]);
+        if (is_null($propretaire)){
+            $view = $this->view([], Response::HTTP_FORBIDDEN, []);
+            return $this->handleView($view);
+        }
+        $body=[
+            'id'=>$propretaire->getId(),
             'name'=>$user->getName(),
             'username'=>$user->getEmail(),
             'password'=>$user->getPhone(),

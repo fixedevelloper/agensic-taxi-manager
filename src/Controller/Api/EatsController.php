@@ -8,6 +8,7 @@ use App\Entity\Article;
 use App\Entity\Category;
 use App\Entity\Image;
 use App\Entity\Place;
+use App\Entity\Proprietaire;
 use App\Entity\Ride;
 use App\Repository\AddressShippingRepository;
 use App\Repository\AffectationRideRepository;
@@ -447,11 +448,41 @@ class EatsController extends AbstractFOSRestController
             'phone' => $item->getPhone(),
             'address' => $item->getAddress(),
             'propretaire' => $item->getPropretaire()->getId(),
+            'propretaire_name' => $item->getPropretaire()->getCompte()->getName(),
             'bp' => $item->getBp(),
             'latitude' => $item->getLatitude(),
             'longitude' => $item->getLongitude(),
 
         ];
+        $view = $this->view($data, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+
+    /**
+     * @Rest\Get("/v1/places/propretaire/{propretaire}", name="api_placepropretaire_list")
+     * @param Request $request
+     * @param Proprietaire $propretaire
+     * @return Response
+     */
+    public function placeByPropretaire(Request $request, Proprietaire $propretaire)
+    {
+        $items= $propretaire->getPlaces();
+        $data=[];
+        foreach ($items as $item){
+            $image = $item->getImage();
+            $data[]=[
+                'id' => $item->getId(),
+                'name' => $item->getName(),
+                'phone' => $item->getPhone(),
+                'address' => $item->getAddress(),
+                'propretaire' => $item->getPropretaire()->getId(),
+                'propretaire_name' => $item->getPropretaire()->getCompte()->getName(),
+                'bp' => $item->getBp(),
+                'latitude' => $item->getLatitude(),
+                'longitude' => $item->getLongitude(),
+                'image' => is_null($image) ? "" : $this->getParameter('domaininit') . $image->getSrc(),
+            ];
+        }
         $view = $this->view($data, Response::HTTP_OK, []);
         return $this->handleView($view);
     }
