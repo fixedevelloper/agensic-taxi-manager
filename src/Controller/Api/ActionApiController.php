@@ -7,6 +7,7 @@ namespace App\Controller\Api;
 use App\Entity\Customer;
 use App\Entity\Driver;
 use App\Entity\Notification;
+use App\Entity\Proprietaire;
 use App\Entity\Ride;
 use App\Entity\Shipping;
 use App\Repository\AddressShippingRepository;
@@ -121,21 +122,21 @@ class ActionApiController extends AbstractFOSRestController
             $ride->setStatus(Ride::CONFIRMED);
             $message="Le chauffeur ".$driver->getCompte()->getName()." a accepté votre course";
             $title="Prise de la course";
-            $this->sendNotificationCustomer($ride->getCustomer()->getId(),$message,$title,"");
+            $this->sendNotificationCustomer($ride->getCustomer()->getId(),$message,$title,"",$ride->getCar()->getPropretaire()->getId());
 
         }
         if ($action=="STARTING_DRIVER"){
             $ride->setStatus(Ride::STARTING);
             $message="Votre course a debute, profitez du confort";
             $title="Course a debutée";
-            $this->sendNotificationCustomer($ride->getCustomer()->getId(),$message,$title,"");
+            $this->sendNotificationCustomer($ride->getCustomer()->getId(),$message,$title,"",$ride->getCar()->getPropretaire()->getId());
 
         }
         if ($action=="FINISH"){
             $ride->setStatus(Ride::FINISH);
             $message="Votre course est terminée, vous etes a destination. Nous vous remercions";
             $title="Course terminée";
-            $this->sendNotificationCustomer($ride->getCustomer()->getId(),$message,$title,"");
+            $this->sendNotificationCustomer($ride->getCustomer()->getId(),$message,$title,"",$ride->getCar()->getPropretaire()->getId());
 
         }
         $this->doctrine->flush();
@@ -159,43 +160,43 @@ class ActionApiController extends AbstractFOSRestController
             $shipping->setStatus(Shipping::ONTHEWAY);
             $message="Le chauffeur ".$driver->getCompte()->getName()." a accepter votre livraison";
             $title="Prise de la course";
-            $this->sendNotificationCustomer($shipping->getCustomer()->getId(),$message,$title,"");
+            $this->sendNotificationCustomer($shipping->getCustomer()->getId(),$message,$title,"",$shipping->getPlace()->getPropretaire()->getId());
         }
         if ($action=="PREPARING"){
             $shipping->setStatus(Shipping::PREPARING);
             $message="Votre commande ".$shipping->getId()." est encours de preparation";
             $messageD="La commande ".$shipping->getId()." du client ".$shipping->getCustomer()->getCompte()->getName()." est encours de preparation";
             $title="Commande en preparation";
-            $this->sendNotificationDriver(null,$messageD,$title,"");
-            $this->sendNotificationCustomer($shipping->getCustomer()->getId(),$message,$title,"");
+            $this->sendNotificationDriver(null,$messageD,$title,"",$shipping->getPlace()->getPropretaire()->getId());
+            $this->sendNotificationCustomer($shipping->getCustomer()->getId(),$message,$title,"",$shipping->getPlace()->getPropretaire()->getId());
 
         }
         if ($action=="REJECT"){
             $shipping->setStatus(Shipping::REJECT);
             $message="La livraison n° ".$shipping->getId()."  a éte annulée .";
             $title="Livraison annulée";
-            $this->sendNotificationCustomer($shipping->getCustomer()->getId(),$message,$title,"");
+            $this->sendNotificationCustomer($shipping->getCustomer()->getId(),$message,$title,"",$shipping->getPlace()->getPropretaire()->getId());
 
         }
         if ($action=="PENDING"){
             $shipping->setStatus(Shipping::PENDING);
             $message="La livraison n° ".$shipping->getId()." a un status PLACED";
             $title="Livraison En cours";
-            $this->sendNotificationCustomer($shipping->getCustomer()->getId(),$message,$title,"");
+            $this->sendNotificationCustomer($shipping->getCustomer()->getId(),$message,$title,"",$shipping->getPlace()->getPropretaire()->getId());
 
         }
         if ($action=="FINISH"){
             $shipping->setStatus(Shipping::DELIVERED);
             $message="La livraison n° ".$shipping->getId()."  est terminée";
             $title="Livraison terminée";
-            $this->sendNotificationCustomer($shipping->getCustomer()->getId(),$message,$title,"");
+            $this->sendNotificationCustomer($shipping->getCustomer()->getId(),$message,$title,"",$shipping->getPlace()->getPropretaire()->getId());
 
         }
         $this->doctrine->flush();
         $view = $this->view([], Response::HTTP_OK, []);
         return $this->handleView($view);
     }
-    private function sendNotificationDriver($driver,$status,$message,$title){
+    private function sendNotificationDriver($driver,$status,$message,$title,$prop){
        $notification=new Notification();
        if ($driver==null){
            $notification->setAlldriver(true);
@@ -203,6 +204,7 @@ class ActionApiController extends AbstractFOSRestController
            $notification->setAlldriver(false);
        }
         $notification->setUserid($driver);
+       $notification->setPropretaire($prop);
         $notification->setMessage($message);
         $notification->setAllcustomer(false);
         $notification->setTitle($title);
@@ -211,7 +213,7 @@ class ActionApiController extends AbstractFOSRestController
         $this->doctrine->persist($notification);
         $this->doctrine->flush();
     }
-    private function sendNotificationCustomer($customer,$message,$title,$status){
+    private function sendNotificationCustomer($customer,$message,$title,$status,$prop){
         $notification=new Notification();
         if ($customer==null){
             $notification->setAllcustomer(true);
@@ -220,7 +222,7 @@ class ActionApiController extends AbstractFOSRestController
         }
         $notification->setUserid($customer);
         $notification->setMessage($message);
-
+        $notification->setPropretaire($prop);
         $notification->setAlldriver(false);
         $notification->setTitle($title);
         $notification->setSendDate(new \DateTime('now',new \DateTimeZone("Africa/Brazzaville")));
@@ -379,6 +381,26 @@ class ActionApiController extends AbstractFOSRestController
             'title'=>$notification->getTitle(),
             'icon'=>$notification->getIcon(),
             'user'=>$driver->getId(),
+            'id'=>$notification->getId()
+        ];
+        $view = $this->view($res, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+
+    /**
+     * @Rest\Get("/v1/notifications/propretaire/{id}", name="api_notification_propretaire")
+     * @param Request $request
+     * @param Proprietaire $proprietaire
+     * @return Response
+     */
+    public function notificationPropretaire(Request $request,Proprietaire $proprietaire)
+    {
+        $notification=$this->notificationRepository->findOneByLastPropretaire($proprietaire->getId());
+        $res=[
+            "message"=>$notification->getMessage(),
+            'title'=>$notification->getTitle(),
+            'icon'=>$notification->getIcon(),
+            'user'=>$proprietaire->getId(),
             'id'=>$notification->getId()
         ];
         $view = $this->view($res, Response::HTTP_OK, []);

@@ -77,4 +77,15 @@ class NotificationRepository extends ServiceEntityRepository
             ->getOneOrNullResult()
             ;
     }
+    public function findOneByLastPropretaire($user):Notification
+    {
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.propretaire = :user')
+            ->setParameter('user',$user)
+            ->setMaxResults(1)
+            ->orderBy('s.id', 'DESC')
+            ->getQuery()
+            ->getOneOrNullResult()
+            ;
+    }
 }

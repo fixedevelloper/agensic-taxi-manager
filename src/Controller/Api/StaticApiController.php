@@ -299,7 +299,7 @@ class StaticApiController extends AbstractFOSRestController
         $this->doctrine->flush();
         $tilte="Nouvelle course";
         $message="Course allant de ".$item->getStartto()." au".$item->getEndto();
-        $this->sendNotificationAllDriver("",$message,$tilte,"");
+        $this->sendNotificationAllDriver("",$message,$tilte,"",$item->getCar()->getPropretaire()->getId());
         $view = $this->view([], Response::HTTP_OK, []);
         return $this->handleView($view);
     }
@@ -404,7 +404,7 @@ class StaticApiController extends AbstractFOSRestController
         $this->doctrine->flush();
         $tilte="Nouvelle Livraison";
         $message="Livraison allant de ".$item->getPlace()->getName()." a".$item->getAddress();
-        $this->sendNotificationAllDriver("",$message,$tilte,"");
+        $this->sendNotificationAllDriver("",$message,$tilte,"",$item->getPlace()->getPropretaire()->getId());
         $view = $this->view([], Response::HTTP_OK, []);
         return $this->handleView($view);
     }
@@ -1032,6 +1032,7 @@ class StaticApiController extends AbstractFOSRestController
                 'driver' =>is_null($item->getDriver())?"": $item->getDriver()->getCompte()->getName(),
                 'driverid' =>is_null($item->getDriver())? null: $item->getDriver()->getId(),
                 'createdat' => $item->getDateCreated()->format("Y-m-d h:m"),
+                'createdatime' => date_timestamp_get($item->getDateCreated()),
                 'sourcelat' => $item->getLatStart(),
                 'sourcelng' => $item->getLngStart(),
                 'destinationlat' => $item->getLatEnd(),
@@ -1077,6 +1078,109 @@ class StaticApiController extends AbstractFOSRestController
                 'driver' =>is_null($item->getDriver())?"": $item->getDriver()->getCompte()->getName(),
                 'driverid' =>is_null($item->getDriver())? null: $item->getDriver()->getId(),
                 'createdat' => $item->getDateCreated()->format("Y-m-d h:m"),
+                'createdatime' => date_timestamp_get($item->getDateCreated()),
+                'sourcelat' => $item->getLatStart(),
+                'sourcelng' => $item->getLngStart(),
+                'destinationlat' => $item->getLatEnd(),
+                'destinationlng' => $item->getLngEnd(),
+                'priceshipping' => $item->getPriceshipping(),
+                'total' => $item->getTotal(),
+                'address' => $item->getAddress(),
+                'customerid' => $item->getCustomer()->getId(),
+                'customername' => $item->getCustomer()->getCompte()->getName(),
+                'lines'=>$lines_
+            ];
+        }
+        $view = $this->view($data, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+
+    /**
+     * @Rest\Get("/v1/shippings/propretaire/{propretaire}", name="api_shippings_propretaire")
+     * @param Request $request
+     * @param Proprietaire $propretaire
+     * @return Response
+     */
+    public function shippingByPropretaire(Request $request,Proprietaire $propretaire)
+    {
+        $places=$propretaire->getPlaces();
+        $places_=[];
+       foreach ($places as $place){
+           $places_[]=$place->getId();
+       }
+        $items = $this->shippingRepository->findByPropretaire($places_);
+        $data = [];
+        foreach ($items as $item) {
+            $lines_=[];
+            $lines=$item->getLineShippings();
+            foreach ($lines as $line){
+                $lines_[]=[
+                    'article'=>$line->getArticle()->getName(),
+                    'amount'=>$line->getAmount(),
+                    'quantity'=>$line->getQuantity(),
+                ];
+            }
+            $data[] = [
+                'id' => $item->getId(),
+                'distance' => $item->getDistance(),
+                'placeid' => $item->getPlace()->getId(),
+                'placename' => $item->getPlace()->getName(),
+                'status' => $item->getStatus(),
+                'driver' =>is_null($item->getDriver())?"": $item->getDriver()->getCompte()->getName(),
+                'driverid' =>is_null($item->getDriver())? null: $item->getDriver()->getId(),
+                'createdat' => $item->getDateCreated()->format("Y-m-d h:m"),
+                'createdatime' => date_timestamp_get($item->getDateCreated()),
+                'sourcelat' => $item->getLatStart(),
+                'sourcelng' => $item->getLngStart(),
+                'destinationlat' => $item->getLatEnd(),
+                'destinationlng' => $item->getLngEnd(),
+                'priceshipping' => $item->getPriceshipping(),
+                'total' => $item->getTotal(),
+                'address' => $item->getAddress(),
+                'customerid' => $item->getCustomer()->getId(),
+                'customername' => $item->getCustomer()->getCompte()->getName(),
+                'lines'=>$lines_
+            ];
+        }
+        $view = $this->view($data, Response::HTTP_OK, []);
+        return $this->handleView($view);
+    }
+
+    /**
+     * @Rest\Get("/v1/shippings/propretaire/{propretaire}/pending", name="api_shippings_pending_propretaire")
+     * @param Request $request
+     * @param Proprietaire $propretaire
+     * @return Response
+     */
+    public function shippingByPropretaireLast(Request $request,Proprietaire $propretaire)
+    {
+        $places=$propretaire->getPlaces();
+        $places_=[];
+        foreach ($places as $place){
+            $places_[]=$place->getId();
+        }
+        $items = $this->shippingRepository->findByLastPropretaire($places_);
+        $data = [];
+        foreach ($items as $item) {
+            $lines_=[];
+            $lines=$item->getLineShippings();
+            foreach ($lines as $line){
+                $lines_[]=[
+                    'article'=>$line->getArticle()->getName(),
+                    'amount'=>$line->getAmount(),
+                    'quantity'=>$line->getQuantity(),
+                ];
+            }
+            $data[] = [
+                'id' => $item->getId(),
+                'distance' => $item->getDistance(),
+                'placeid' => $item->getPlace()->getId(),
+                'placename' => $item->getPlace()->getName(),
+                'status' => $item->getStatus(),
+                'driver' =>is_null($item->getDriver())?"": $item->getDriver()->getCompte()->getName(),
+                'driverid' =>is_null($item->getDriver())? null: $item->getDriver()->getId(),
+                'createdat' => $item->getDateCreated()->format("Y-m-d h:m"),
+                'createdatime' => date_timestamp_get($item->getDateCreated()),
                 'sourcelat' => $item->getLatStart(),
                 'sourcelng' => $item->getLngStart(),
                 'destinationlat' => $item->getLatEnd(),
@@ -1163,6 +1267,7 @@ class StaticApiController extends AbstractFOSRestController
                 'driver' =>is_null($item->getDriver())?"": $item->getDriver()->getCompte()->getName(),
                 'driverid' =>is_null($item->getDriver())? null: $item->getDriver()->getId(),
                 'createdat' => $item->getDateCreated()->format("Y-m-d h:m"),
+                'createdatime' => date_timestamp_get($item->getDateCreated()),
                 'sourcelat' => $item->getLatStart(),
                 'sourcelng' => $item->getLngStart(),
                 'destinationlat' => $item->getLatEnd(),
@@ -1229,13 +1334,26 @@ class StaticApiController extends AbstractFOSRestController
         $this->doctrine->persist($notification);
         $this->doctrine->flush();
     }
-    private function sendNotificationAllDriver($driver,$message,$title,$status){
-
+    private function sendNotificationPropretaire($customer,$message,$title,$status){
         $notification=new Notification();
         $notification->setUserid(null);
         $notification->setMessage($message);
         $notification->setAllcustomer(false);
-        $notification->setAlldriver(true);
+        $notification->setAlldriver(false);
+        $notification->setTitle($title);
+        $notification->setSendDate(new \DateTime('now',new \DateTimeZone("Africa/Brazzaville")));
+        $notification->setIcon("");
+        $this->doctrine->persist($notification);
+        $this->doctrine->flush();
+    }
+    private function sendNotificationAllDriver($driver,$message,$title,$status,$propretaire){
+
+        $notification=new Notification();
+        $notification->setUserid(null);
+        $notification->setPropretaire($propretaire);
+        $notification->setMessage($message);
+        $notification->setAllcustomer(false);
+        $notification->setAlldriver(false);
         $notification->setTitle($title);
         $notification->setSendDate(new \DateTime('now',new \DateTimeZone("Africa/Brazzaville")));
         $notification->setIcon("");

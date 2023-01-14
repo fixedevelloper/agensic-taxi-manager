@@ -25,6 +25,8 @@ class Notification
 
     #[ORM\Column(nullable: true)]
     private ?int $userid = null;
+    #[ORM\Column(nullable: true)]
+    private ?int $propretaire = null;
 
     #[ORM\Column(nullable: true)]
     private ?bool $alldriver = false;
@@ -50,6 +52,22 @@ class Notification
         $this->title = $title;
 
         return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getPropretaire(): ?int
+    {
+        return $this->propretaire;
+    }
+
+    /**
+     * @param int|null $propretaire
+     */
+    public function setPropretaire(?int $propretaire): void
+    {
+        $this->propretaire = $propretaire;
     }
 
     public function getMessage(): ?string

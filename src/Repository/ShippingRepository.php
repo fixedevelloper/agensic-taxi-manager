@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Proprietaire;
 use App\Entity\Shipping;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -39,20 +40,37 @@ class ShippingRepository extends ServiceEntityRepository
         }
     }
 
-//    /**
-//     * @return Shipping[] Returns an array of Shipping objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('s')
-//            ->andWhere('s.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('s.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    /**
+     * @return Shipping[] Returns an array of Shipping objects
+     */
+    public function findByPropretaire($value): array
+    {
+        $qb = $this->getEntityManager()->createQueryBuilder();
+        $qb->select('f')
+            ->from(Shipping::class, 'f')
+            ->leftJoin('f.place','place')
+            ->addOrderBy('f.id', 'DESC')
+        ;
+        $qb->andWhere($qb->expr()->in('place.id',$value));
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @param $value
+     * @return Shipping[] Returns an array of Shipping objects
+     */
+    public function findByLastPropretaire($value): array
+    {
+        $qb = $this->getEntityManager()->createQueryBuilder();
+        $qb->select('f')
+            ->from(Shipping::class, 'f')
+            ->leftJoin('f.place','place')
+            ->addOrderBy('f.id', 'DESC')
+        ;
+       $qb->andWhere($qb->expr()->in('place.id',$value));
+        $qb->setMaxResults(10);
+        return $qb->getQuery()->getResult();
+    }
 
 //    public function findOneBySomeField($value): ?Shipping
 //    {
