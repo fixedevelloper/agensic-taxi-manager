@@ -1246,7 +1246,7 @@ class StaticApiController extends AbstractFOSRestController
      */
     public function shippingstartList(Request $request)
     {
-        $items = $this->shippingRepository->findBy(['status'=>Shipping::PENDING]);
+        $items = $this->shippingRepository->findBy(['status'=>Shipping::PREPARING]);
         $data = [];
         foreach ($items as $item) {
             $lines_=[];

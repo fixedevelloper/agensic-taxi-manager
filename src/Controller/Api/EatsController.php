@@ -135,12 +135,15 @@ class EatsController extends AbstractFOSRestController
         $res = json_decode($request->getContent(), true);
         $data = $res;
         $destination = $this->getParameter('kernel.project_dir') . '/public/uploads/products/';
+        $this->logger->info("################################################################################################");
+        $this->logger->info("Je suis iciM2".$data['name']);
         if (!is_null($data['id'])) {
             $image = $this->imageRepository->find($data['id']);
         } else {
             $image = new Image();
             $this->doctrine->persist($image);
         }
+        $this->logger->info("Je suis iciM2");
         if (!empty($data['filename'])) {
             $image_parts = explode(";base64,", $data['filename']);
             if (!empty($image_parts[1])) {
