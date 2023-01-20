@@ -38,29 +38,17 @@ class AffectationRideRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+    public function findOneByLastDriver($user):AffectationRide
+    {
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.driver = :user')
+            ->andWhere('s.isEnable = 1')
+            ->setParameter('user',$user)
+            ->setMaxResults(1)
+            ->orderBy('s.id', 'DESC')
+            ->getQuery()
+            ->getOneOrNullResult()
+            ;
+    }
 
-//    /**
-//     * @return AffectationRide[] Returns an array of AffectationRide objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('a')
-//            ->andWhere('a.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('a.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-//    public function findOneBySomeField($value): ?AffectationRide
-//    {
-//        return $this->createQueryBuilder('a')
-//            ->andWhere('a.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
 }
