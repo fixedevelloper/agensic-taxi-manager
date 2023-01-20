@@ -111,11 +111,11 @@ class ActionApiController extends AbstractFOSRestController
         $res = json_decode($request->getContent(), true);
         $data = $res['data'];
         $ride=$this->rideRepository->find($data['ride']);
-        $affectation=$this->affactationRepository->findOneByLastDriver($ride->getDriver());
+
         $action=$data['action'];
         if ($action=="VALIDATE_DRIVER"){
             $driver=$this->driverRepository->find($data['driver']);
-            //$affectation=$this->affactationRepository->findOneBy(['driver'=>$driver,'isEnable'=>true]);
+            $affectation=$this->affactationRepository->findOneByLastDriver($driver);
             $ride->setDriver($driver);
             if (!is_null($affectation)){
                 $ride->setCar($affectation->getCAr());
